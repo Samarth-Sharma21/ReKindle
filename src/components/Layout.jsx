@@ -300,19 +300,15 @@ const Layout = () => {
       }}>
       <Box sx={{ px: 3, mb: 1, display: { xs: 'block', md: 'none' } }}>
         <Box
-          component={RouterLink}
-          to='/'
           sx={{
             textDecoration: 'none',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'flex-start',
           }}>
-          <Logo size='medium' withLink={false} />
+          <Logo size='medium' withLink={true} />
         </Box>
       </Box>
-
-      {/* <Divider sx={{ mb: 0.5, opacity: 0.6 }} /> */}
 
       {/* Main Navigation */}
       <NavSection>
@@ -322,7 +318,7 @@ const Layout = () => {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2 }}>
-              <Logo size='medium' withLink={false} />
+              <Logo size='medium' withLink={true} />
             </motion.div>
           </Box>
         ) : null}
@@ -454,7 +450,10 @@ const Layout = () => {
       <CssBaseline />
       <StyledAppBar
         visible={headerVisible}
-        sx={{ zIndex: (theme) => theme.zIndex.drawer + 2 }}>
+        sx={{ 
+          zIndex: (theme) => theme.zIndex.drawer + 2,
+          boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+        }}>
         <StyledToolbar>
           <StyledLogoContainer>
             <IconButton
@@ -475,11 +474,13 @@ const Layout = () => {
                 '&:hover': {
                   opacity: 0.85,
                 },
-                transform: 'scale(1.2)',
+                transform: { xs: 'scale(1)', sm: 'scale(1.1)' },
                 transformOrigin: 'left center',
-                mx: { xs: 2, sm: 0 },
+                mx: { xs: 0.5, sm: 0 },
+                overflow: 'visible',
+                marginLeft: { xs: 0, sm: 1 },
               }}>
-              <Logo size='medium' withLink={true} />
+              <Logo size={isMobile ? 'small' : 'medium'} withLink={true} />
             </Box>
           </StyledLogoContainer>
 

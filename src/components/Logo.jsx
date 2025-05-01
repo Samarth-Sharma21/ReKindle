@@ -2,9 +2,20 @@ import React from 'react';
 import { Typography, Box, useTheme } from '@mui/material';
 import { Link } from 'react-router-dom';
 import SpaIcon from '@mui/icons-material/Spa'; // Leaf-like icon
+import { useAuth } from '../contexts/AuthContext';
 
-const Logo = ({ size = 'medium', linkTo = '/', withLink = true }) => {
+const Logo = ({ size = 'medium', linkTo, withLink = true }) => {
   const theme = useTheme();
+  const { user } = useAuth();
+
+  // Determine correct dashboard path based on user type
+  const getDashboardPath = () => {
+    if (!user) return '/'; // Not logged in, go to landing
+    return user.type === 'family' ? '/family/dashboard' : '/patient/dashboard';
+  };
+
+  // Use provided linkTo or determine from user type
+  const targetPath = linkTo || getDashboardPath();
 
   // Size variants - updated to be larger
   const sizes = {
@@ -66,7 +77,7 @@ const Logo = ({ size = 'medium', linkTo = '/', withLink = true }) => {
     return (
       <Box
         component={Link}
-        to={linkTo}
+        to={targetPath}
         sx={{
           textDecoration: 'none',
           display: 'flex',

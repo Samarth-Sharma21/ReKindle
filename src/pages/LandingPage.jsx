@@ -17,6 +17,7 @@ import {
   Slide,
   IconButton,
   Tooltip,
+  useMediaQuery,
 } from '@mui/material';
 import MemoryIcon from '@mui/icons-material/Memory';
 import PeopleIcon from '@mui/icons-material/People';
@@ -40,6 +41,7 @@ const LandingPage = () => {
   const { mode, toggleTheme } = useCustomTheme();
   const [scrollDir, setScrollDir] = useState('up');
   const [prevScrollY, setPrevScrollY] = useState(0);
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   useEffect(() => {
     const handleScroll = () => {
@@ -126,6 +128,8 @@ const LandingPage = () => {
         bgcolor: 'background.default',
         position: 'relative',
         minHeight: '100vh',
+        overflow: 'hidden',
+        width: '100%',
       }}>
       {/* Chatbot */}
       <Chatbot />
@@ -158,11 +162,11 @@ const LandingPage = () => {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'flex-start',
-                  transform: 'scale(1.2)',
+                  transform: { xs: 'scale(0.9)', sm: 'scale(1.2)' },
                   transformOrigin: 'left center',
-                  ml: { xs: 2, sm: 0 },
+                  ml: { xs: 0, sm: 0 },
                 }}>
-                <Logo size='medium' />
+                <Logo size={isMobile ? 'small' : 'medium'} />
               </Box>
 
               {/* Navigation */}
@@ -223,7 +227,12 @@ const LandingPage = () => {
               </Stack>
 
               {/* Action Buttons */}
-              <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  gap: { xs: 1, sm: 2 },
+                  alignItems: 'center',
+                }}>
                 {/* Theme Toggle */}
                 <Tooltip
                   title={`Switch to ${
@@ -267,6 +276,8 @@ const LandingPage = () => {
                     borderRadius: 2,
                     textTransform: 'none',
                     fontWeight: 600,
+                    fontSize: { xs: '0.8rem', sm: 'inherit' },
+                    px: { xs: 2, sm: 3 },
                   }}>
                   Get Started
                 </Button>
@@ -276,18 +287,19 @@ const LandingPage = () => {
         </AppBar>
       </Slide>
 
-      {/* Hero Section */}
+      {/* Hero Section with reduced side padding on mobile */}
       <Box
         sx={{
           position: 'relative',
           overflow: 'hidden',
-          marginTop: { xs: 8, sm: 10, md: 10.5 },
+          marginTop: { xs: 7, sm: 8, md: 10.5 },
           background:
             mode === 'dark'
               ? 'linear-gradient(90deg, #8B4513 0%, #B15500 100%)'
               : `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 50%, ${theme.palette.secondary.main} 100%)`,
-          pt: { xs: 12, sm: 14, md: 16 }, // Reduced padding for shorter hero
-          pb: { xs: 8, sm: 10, md: 12 }, // Reduced padding for shorter hero
+          pt: { xs: 8, sm: 12, md: 16 },
+          pb: { xs: 6, sm: 8, md: 12 },
+          px: 0,
         }}>
         {/* Background Elements */}
         <Box
@@ -295,11 +307,12 @@ const LandingPage = () => {
             position: 'absolute',
             top: '-5%',
             right: '-10%',
-            width: '500px',
-            height: '500px',
+            width: { xs: '300px', sm: '400px', md: '500px' },
+            height: { xs: '300px', sm: '400px', md: '500px' },
             borderRadius: '50%',
             background: 'rgba(255, 255, 255, 0.08)',
             zIndex: 0,
+            display: { xs: 'none', sm: 'block' },
           }}
         />
         <Box
@@ -307,25 +320,40 @@ const LandingPage = () => {
             position: 'absolute',
             bottom: '-15%',
             left: '-5%',
-            width: '400px',
-            height: '400px',
+            width: { xs: '250px', sm: '300px', md: '400px' },
+            height: { xs: '250px', sm: '300px', md: '400px' },
             borderRadius: '50%',
             background: 'rgba(255, 255, 255, 0.05)',
             zIndex: 0,
+            display: { xs: 'none', sm: 'block' },
           }}
         />
 
-        <Container maxWidth='lg' sx={{ position: 'relative', zIndex: 1 }}>
-          <Grid container spacing={5} alignItems='center'>
+        <Container
+          maxWidth='lg'
+          disableGutters={isMobile}
+          sx={{
+            position: 'relative',
+            zIndex: 1,
+            px: { xs: 2, sm: 3 },
+            width: '100%',
+            maxWidth: '100%',
+          }}>
+          <Grid container spacing={3} alignItems='center'>
             <Grid item xs={12} sx={{ textAlign: 'center', mx: 'auto' }}>
               <div>
                 <Typography
                   component='h1'
                   sx={{
-                    fontSize: { xs: '2.5rem', sm: '3.5rem', md: '4.5rem' },
+                    fontSize: {
+                      xs: '2rem',
+                      sm: '2.5rem',
+                      md: '3.5rem',
+                      lg: '4.5rem',
+                    },
                     fontWeight: 700,
                     lineHeight: 1.1,
-                    mb: 3,
+                    mb: { xs: 2, sm: 3 },
                     color: 'white',
                     textAlign: 'center',
                     fontFamily: '"Playfair Display", serif',
@@ -350,13 +378,14 @@ const LandingPage = () => {
                 <Typography
                   variant='h5'
                   sx={{
-                    fontSize: { xs: '1.2rem', sm: '1.4rem' },
+                    fontSize: { xs: '1rem', sm: '1.2rem', md: '1.4rem' },
                     lineHeight: 1.6,
-                    mb: 4,
+                    mb: { xs: 3, sm: 4 },
                     maxWidth: '600px',
                     color: 'rgba(255,255,255,0.9)',
                     textAlign: 'center',
                     mx: 'auto',
+                    px: { xs: 2, sm: 0 },
                     textShadow:
                       mode === 'dark' ? '0 1px 5px rgba(0,0,0,0.2)' : 'none',
                   }}>
@@ -367,25 +396,25 @@ const LandingPage = () => {
                 <Box
                   sx={{
                     display: 'flex',
-                    gap: 3,
+                    gap: { xs: 2, sm: 3 },
                     flexWrap: { xs: 'wrap', sm: 'nowrap' },
                     justifyContent: 'center',
                   }}>
                   <Button
                     variant='contained'
                     color={mode === 'dark' ? 'inherit' : 'secondary'}
-                    size='large'
+                    size={isMobile ? 'medium' : 'large'}
                     onClick={handlePatientRegister}
                     sx={{
-                      py: 1.8,
-                      px: 3,
+                      py: { xs: 1.5, sm: 1.8 },
+                      px: { xs: 2, sm: 3 },
                       borderRadius: 2,
-                      fontSize: '1rem',
+                      fontSize: { xs: '0.9rem', sm: '1rem' },
                       fontWeight: 600,
                       textTransform: 'none',
                       boxShadow:
                         mode === 'dark' ? theme.shadows[6] : theme.shadows[4],
-                      minWidth: '180px',
+                      minWidth: { xs: '140px', sm: '180px' },
                       bgcolor: mode === 'dark' ? 'white' : undefined,
                       color: mode === 'dark' ? '#B15500' : undefined,
                       '&:hover': {
@@ -404,13 +433,13 @@ const LandingPage = () => {
 
                   <Button
                     variant='outlined'
-                    size='large'
+                    size={isMobile ? 'medium' : 'large'}
                     onClick={handleFamilyRegister}
                     sx={{
-                      py: 1.8,
-                      px: 3,
+                      py: { xs: 1.5, sm: 1.8 },
+                      px: { xs: 2, sm: 3 },
                       borderRadius: 2,
-                      fontSize: '1rem',
+                      fontSize: { xs: '0.9rem', sm: '1rem' },
                       fontWeight: 600,
                       textTransform: 'none',
                       borderColor: 'rgba(255,255,255,0.5)',
@@ -425,11 +454,12 @@ const LandingPage = () => {
                   </Button>
                 </Box>
 
-                <Box sx={{ mt: 4 }}>
+                <Box sx={{ mt: { xs: 3, sm: 4 } }}>
                   <Typography
                     variant='body2'
                     sx={{
                       color: 'rgba(255,255,255,0.7)',
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
                     }}>
                     Already have an account?{' '}
                     <Button
@@ -438,6 +468,9 @@ const LandingPage = () => {
                         color: mode === 'dark' ? '#FFB84D' : 'white',
                         fontWeight: 'bold',
                         textTransform: 'none',
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                        py: { xs: 0, sm: 1 },
+                        px: { xs: 0.5, sm: 1 },
                         '&:hover': {
                           background: 'transparent',
                           textDecoration: 'underline',
@@ -452,6 +485,9 @@ const LandingPage = () => {
                         color: mode === 'dark' ? '#FFB84D' : 'white',
                         fontWeight: 'bold',
                         textTransform: 'none',
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                        py: { xs: 0, sm: 1 },
+                        px: { xs: 0.5, sm: 1 },
                         '&:hover': {
                           background: 'transparent',
                           textDecoration: 'underline',
@@ -470,7 +506,8 @@ const LandingPage = () => {
       {/* Stats Section */}
       <Box
         sx={{
-          py: 5,
+          py: { xs: 3, sm: 4, md: 5 },
+          px: 0,
           borderBottom: `1px solid ${
             mode === 'dark'
               ? 'rgba(255, 138, 0, 0.2)'
@@ -480,9 +517,16 @@ const LandingPage = () => {
             mode === 'dark'
               ? 'rgba(30, 30, 30, 0.8)'
               : theme.palette.background.subtle,
+          width: '100%',
         }}>
-        <Container maxWidth='lg'>
-          <Grid container spacing={3} justifyContent='center'>
+        <Container
+          maxWidth='lg'
+          disableGutters={isMobile}
+          sx={{
+            px: { xs: 2, sm: 3 },
+            width: '100%',
+          }}>
+          <Grid container spacing={{ xs: 2, sm: 3 }} justifyContent='center'>
             {statistics.map((stat, index) => (
               <Grid item xs={12} sm={4} key={index}>
                 <div
@@ -493,7 +537,7 @@ const LandingPage = () => {
                   <Box
                     sx={{
                       textAlign: 'center',
-                      p: 3,
+                      p: { xs: 2, sm: 3 },
                     }}>
                     <Typography
                       variant='h4'
@@ -504,6 +548,7 @@ const LandingPage = () => {
                             : theme.palette.primary.main,
                         fontWeight: 700,
                         mb: 1,
+                        fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' },
                       }}>
                       {stat.value}
                     </Typography>
@@ -516,7 +561,7 @@ const LandingPage = () => {
                       }
                       sx={{
                         fontWeight: 400,
-                        fontSize: { xs: '1rem', md: '1.1rem' },
+                        fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
                       }}>
                       {stat.label}
                     </Typography>
@@ -532,15 +577,23 @@ const LandingPage = () => {
       <Box
         id='ourApproach'
         sx={{
-          py: { xs: 8, md: 12 },
+          py: { xs: 6, sm: 8, md: 12 },
+          px: 0,
           bgcolor: mode === 'dark' ? '#111111' : 'background.default',
           borderBottom: `1px solid ${
             mode === 'dark'
               ? 'rgba(255, 138, 0, 0.2)'
               : 'rgba(255, 138, 0, 0.12)'
           }`,
+          width: '100%',
         }}>
-        <Container maxWidth='lg'>
+        <Container
+          maxWidth='lg'
+          disableGutters={isMobile}
+          sx={{
+            px: { xs: 2, sm: 3 },
+            width: '100%',
+          }}>
           <Grid container justifyContent='center'>
             {/* Text content */}
             <Grid
@@ -569,7 +622,7 @@ const LandingPage = () => {
                           : theme.palette.primary.main,
                       letterSpacing: 2,
                       fontWeight: 600,
-                      fontSize: '0.9rem',
+                      fontSize: { xs: '0.7rem', sm: '0.9rem' },
                       opacity: 0.85,
                     }}>
                     OUR APPROACH
@@ -579,7 +632,7 @@ const LandingPage = () => {
                     component='h2'
                     sx={{
                       mb: 4,
-                      fontSize: { xs: '2rem', sm: '2.5rem', md: '3.2rem' },
+                      fontSize: { xs: '1.75rem', sm: '2.25rem', md: '3.2rem' },
                       fontWeight: 800,
                       lineHeight: 1.1,
                       color:
@@ -599,7 +652,7 @@ const LandingPage = () => {
                     variant='body1'
                     sx={{
                       mb: 4,
-                      fontSize: '1.1rem',
+                      fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
                       lineHeight: 1.8,
                       color:
                         mode === 'dark'
@@ -607,6 +660,7 @@ const LandingPage = () => {
                           : 'text.secondary',
                       maxWidth: '650px',
                       mx: 'auto',
+                      px: { xs: 1, sm: 0 },
                     }}>
                     As a leading memory-preservation platform, we do everything
                     in our power to help families preserve precious moments
@@ -617,14 +671,14 @@ const LandingPage = () => {
                   <Button
                     variant='contained'
                     color={mode === 'dark' ? 'inherit' : 'primary'}
-                    size='large'
+                    size={isMobile ? 'medium' : 'large'}
                     endIcon={<ArrowForwardIcon />}
                     onClick={handlePatientRegister}
                     sx={{
-                      py: 1.5,
-                      px: 3.5,
+                      py: { xs: 1.2, sm: 1.5 },
+                      px: { xs: 2.5, sm: 3.5 },
                       borderRadius: 2,
-                      fontSize: '1rem',
+                      fontSize: { xs: '0.9rem', sm: '1rem' },
                       fontWeight: 600,
                       textTransform: 'none',
                       boxShadow: 'none',
@@ -651,39 +705,57 @@ const LandingPage = () => {
             </Grid>
 
             {/* Services section below */}
-            <Grid item xs={12} sx={{ mt: { xs: 8, md: 12 } }}>
+            <Grid item xs={12} sx={{ mt: { xs: 6, sm: 8, md: 12 } }}>
               <div>
-                <Grid container spacing={3}>
+                <Grid
+                  container
+                  spacing={{ xs: 2, sm: 3 }}
+                  justifyContent='center'>
                   {[
                     {
-                      icon: <AnalyticsIcon sx={{ fontSize: 40 }} />,
+                      icon: (
+                        <AnalyticsIcon sx={{ fontSize: { xs: 30, sm: 40 } }} />
+                      ),
                       title: 'Data-Driven Care',
                       description:
                         'Personalized memory tracking that adapts to individual needs and cognitive patterns.',
                     },
                     {
-                      icon: <DevicesIcon sx={{ fontSize: 40 }} />,
+                      icon: (
+                        <DevicesIcon sx={{ fontSize: { xs: 30, sm: 40 } }} />
+                      ),
                       title: 'Multi-Platform Access',
                       description:
                         'Access memories seamlessly across any device - mobile, tablet, or desktop.',
                     },
                     {
-                      icon: <SecurityIcon sx={{ fontSize: 40 }} />,
+                      icon: (
+                        <SecurityIcon sx={{ fontSize: { xs: 30, sm: 40 } }} />
+                      ),
                       title: 'Privacy & Security',
                       description:
                         'End-to-end encryption ensures your personal memories remain private and secure.',
                     },
                   ].map((item, index) => (
-                    <Grid item xs={12} sm={4} key={index}>
+                    <Grid
+                      item
+                      xs={12}
+                      sm={4}
+                      key={index}
+                      sx={{ display: 'flex' }}>
                       <Paper
                         elevation={2}
                         sx={{
-                          p: 3,
+                          p: { xs: 2, sm: 3 },
                           height: '100%',
+                          width: '100%',
                           borderRadius: 3,
                           transition: 'transform 0.3s, box-shadow 0.3s',
                           '&:hover': {
-                            transform: 'translateY(-8px)',
+                            transform: {
+                              xs: 'translateY(-5px)',
+                              sm: 'translateY(-8px)',
+                            },
                             boxShadow: '0 8px 20px rgba(255, 138, 0, 0.15)',
                           },
                           background:
@@ -691,15 +763,32 @@ const LandingPage = () => {
                               ? 'linear-gradient(135deg, rgba(255, 138, 0, 0.05) 0%, rgba(40, 40, 40, 1) 100%)'
                               : 'linear-gradient(135deg, rgba(255, 138, 0, 0.02) 0%, rgba(255, 255, 255, 1) 100%)',
                         }}>
-                        <Box sx={{ color: theme.palette.primary.main, mb: 2 }}>
+                        <Box
+                          sx={{
+                            color: theme.palette.primary.main,
+                            mb: 2,
+                            display: 'flex',
+                            justifyContent: { xs: 'center', sm: 'flex-start' },
+                          }}>
                           {item.icon}
                         </Box>
                         <Typography
                           variant='h6'
-                          sx={{ mb: 1, fontWeight: 600 }}>
+                          sx={{
+                            mb: 1,
+                            fontWeight: 600,
+                            fontSize: { xs: '1.1rem', sm: '1.25rem' },
+                            textAlign: { xs: 'center', sm: 'left' },
+                          }}>
                           {item.title}
                         </Typography>
-                        <Typography variant='body2' color='text.secondary'>
+                        <Typography
+                          variant='body2'
+                          color='text.secondary'
+                          sx={{
+                            fontSize: { xs: '0.875rem', sm: '0.9rem' },
+                            textAlign: { xs: 'center', sm: 'left' },
+                          }}>
                           {item.description}
                         </Typography>
                       </Paper>
@@ -716,13 +805,21 @@ const LandingPage = () => {
       <Box
         id='features'
         sx={{
-          py: { xs: 8, md: 12 },
+          py: { xs: 6, sm: 8, md: 12 },
+          px: 0,
           bgcolor:
             mode === 'dark'
               ? 'rgba(18, 18, 18, 0.8)'
               : theme.palette.background.subtle,
+          width: '100%',
         }}>
-        <Container maxWidth='lg'>
+        <Container
+          maxWidth='lg'
+          disableGutters={isMobile}
+          sx={{
+            px: { xs: 2, sm: 3 },
+            width: '100%',
+          }}>
           <Grid container spacing={3} direction='column' alignItems='center'>
             <Grid item xs={12}>
               <div
@@ -735,7 +832,7 @@ const LandingPage = () => {
                     textAlign: 'center',
                     maxWidth: '700px',
                     mx: 'auto',
-                    mb: 6,
+                    mb: { xs: 4, sm: 6 },
                   }}>
                   <Typography
                     variant='overline'
@@ -746,6 +843,7 @@ const LandingPage = () => {
                           : theme.palette.primary.main,
                       letterSpacing: 2,
                       fontWeight: 600,
+                      fontSize: { xs: '0.7rem', sm: '0.9rem' },
                     }}>
                     OUR FEATURES
                   </Typography>
@@ -756,6 +854,7 @@ const LandingPage = () => {
                       mt: 1,
                       mb: 3,
                       fontWeight: 700,
+                      fontSize: { xs: '1.75rem', sm: '2.5rem', md: '3.2rem' },
                       background:
                         mode === 'dark'
                           ? 'linear-gradient(90deg, #FFB84D 30%, #FFC876 100%)'
@@ -773,7 +872,8 @@ const LandingPage = () => {
                         : 'text.secondary'
                     }
                     sx={{
-                      fontSize: '1.1rem',
+                      fontSize: { xs: '0.9rem', sm: '1.1rem' },
+                      px: { xs: 1, sm: 0 },
                     }}>
                     Our comprehensive suite of memory preservation tools is
                     designed to support every phase of the memory journey.
@@ -783,68 +883,83 @@ const LandingPage = () => {
             </Grid>
           </Grid>
 
-          <Grid container spacing={4} justifyContent='center'>
+          <Grid
+            container
+            spacing={{ xs: 2, sm: 3, md: 4 }}
+            justifyContent='center'>
             {features.map((feature, index) => (
-              <Grid item xs={12} sm={6} md={4} key={index}>
-                <div>
-                  <Card
-                    sx={{
-                      height: '100%',
-                      borderRadius: 3,
-                      boxShadow: '0 4px 12px rgba(255, 138, 0, 0.1)',
-                      transition: 'transform 0.3s, box-shadow 0.3s',
-                      '&:hover': {
-                        transform: 'translateY(-10px)',
-                        boxShadow: '0 10px 25px rgba(255, 138, 0, 0.2)',
+              <Grid
+                item
+                xs={12}
+                sm={6}
+                md={4}
+                key={index}
+                sx={{ display: 'flex' }}>
+                <Card
+                  sx={{
+                    height: '100%',
+                    width: '100%',
+                    borderRadius: 3,
+                    boxShadow: '0 4px 12px rgba(255, 138, 0, 0.1)',
+                    transition: 'transform 0.3s, box-shadow 0.3s',
+                    '&:hover': {
+                      transform: {
+                        xs: 'translateY(-5px)',
+                        sm: 'translateY(-10px)',
                       },
-                      background:
-                        mode === 'dark'
-                          ? 'linear-gradient(135deg, rgba(177, 85, 0, 0.8) 0%, rgba(139, 69, 19, 0.9) 100%)'
-                          : 'white',
-                      border:
-                        mode === 'dark'
-                          ? `1px solid rgba(255, 178, 0, 0.25)`
-                          : `1px solid rgba(255, 138, 0, 0.08)`,
-                    }}>
-                    <CardContent sx={{ p: 4 }}>
-                      <Box
-                        sx={{
-                          mb: 3,
-                          color:
-                            mode === 'dark'
-                              ? 'rgba(255,255,255,0.9)'
-                              : theme.palette.primary.main,
-                          display: 'flex',
-                          justifyContent: 'center',
-                        }}>
-                        {feature.icon}
-                      </Box>
-                      <Typography
-                        variant='h5'
-                        component='h3'
-                        align='center'
-                        gutterBottom
-                        sx={{
-                          fontWeight: 600,
-                          mb: 2,
-                          color: mode === 'dark' ? 'white' : 'inherit',
-                        }}>
-                        {feature.title}
-                      </Typography>
-                      <Typography
-                        variant='body2'
-                        align='center'
-                        color={
+                      boxShadow: '0 10px 25px rgba(255, 138, 0, 0.2)',
+                    },
+                    background:
+                      mode === 'dark'
+                        ? 'linear-gradient(135deg, rgba(177, 85, 0, 0.8) 0%, rgba(139, 69, 19, 0.9) 100%)'
+                        : 'white',
+                    border:
+                      mode === 'dark'
+                        ? `1px solid rgba(255, 178, 0, 0.25)`
+                        : `1px solid rgba(255, 138, 0, 0.08)`,
+                  }}>
+                  <CardContent sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
+                    <Box
+                      sx={{
+                        mb: 3,
+                        color:
                           mode === 'dark'
-                            ? 'rgba(255,255,255,0.85)'
-                            : 'text.secondary'
-                        }
-                        sx={{ fontSize: '1rem', lineHeight: 1.7 }}>
-                        {feature.description}
-                      </Typography>
-                    </CardContent>
-                  </Card>
-                </div>
+                            ? 'rgba(255,255,255,0.9)'
+                            : theme.palette.primary.main,
+                        display: 'flex',
+                        justifyContent: 'center',
+                      }}>
+                      {feature.icon}
+                    </Box>
+                    <Typography
+                      variant='h5'
+                      component='h3'
+                      align='center'
+                      gutterBottom
+                      sx={{
+                        fontWeight: 600,
+                        mb: 2,
+                        fontSize: { xs: '1.25rem', sm: '1.5rem' },
+                        color: mode === 'dark' ? 'white' : 'inherit',
+                      }}>
+                      {feature.title}
+                    </Typography>
+                    <Typography
+                      variant='body2'
+                      align='center'
+                      color={
+                        mode === 'dark'
+                          ? 'rgba(255,255,255,0.85)'
+                          : 'text.secondary'
+                      }
+                      sx={{
+                        fontSize: { xs: '0.875rem', sm: '1rem' },
+                        lineHeight: 1.7,
+                      }}>
+                      {feature.description}
+                    </Typography>
+                  </CardContent>
+                </Card>
               </Grid>
             ))}
           </Grid>
@@ -854,12 +969,23 @@ const LandingPage = () => {
       {/* Testimonial Section */}
       <Box
         sx={{
-          py: { xs: 8, md: 12 },
+          py: { xs: 6, sm: 8, md: 12 },
+          px: 0,
           bgcolor: mode === 'dark' ? '#111111' : 'background.default',
+          width: '100%',
         }}>
-        <Container maxWidth='lg'>
+        <Container
+          maxWidth='lg'
+          disableGutters={isMobile}
+          sx={{
+            px: { xs: 2, sm: 3 },
+            width: '100%',
+          }}>
           <Grid container spacing={3} justifyContent='center'>
-            <Grid item xs={12} sx={{ textAlign: 'center', mb: 4 }}>
+            <Grid
+              item
+              xs={12}
+              sx={{ textAlign: 'center', mb: { xs: 3, sm: 4 } }}>
               <div
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -872,6 +998,7 @@ const LandingPage = () => {
                       mode === 'dark' ? '#FFB84D' : theme.palette.primary.main,
                     letterSpacing: 2,
                     fontWeight: 600,
+                    fontSize: { xs: '0.7rem', sm: '0.9rem' },
                   }}>
                   TESTIMONIALS
                 </Typography>
@@ -882,6 +1009,7 @@ const LandingPage = () => {
                     mt: 1,
                     mb: 2,
                     fontWeight: 700,
+                    fontSize: { xs: '1.75rem', sm: '2.5rem', md: '3.2rem' },
                     background:
                       mode === 'dark'
                         ? 'linear-gradient(90deg, #FFB84D 30%, #FFC876 100%)'
@@ -894,20 +1022,25 @@ const LandingPage = () => {
               </div>
             </Grid>
 
-            <Grid container spacing={4} justifyContent='center'>
+            <Grid
+              container
+              spacing={{ xs: 2, sm: 3, md: 4 }}
+              justifyContent='center'>
               {testimonials.map((testimonial, index) => (
-                <Grid item xs={12} md={6} key={index}>
+                <Grid item xs={12} md={6} key={index} sx={{ display: 'flex' }}>
                   <div
                     initial={{ opacity: 0, y: 40 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    transition={{ duration: 0.6, delay: index * 0.2 }}>
+                    transition={{ duration: 0.6, delay: index * 0.2 }}
+                    style={{ width: '100%', height: '100%' }}>
                     <Paper
                       elevation={2}
                       sx={{
-                        p: 4,
+                        p: { xs: 3, sm: 4 },
                         borderRadius: 3,
                         height: '100%',
+                        width: '100%',
                         position: 'relative',
                         overflow: 'hidden',
                         boxShadow: '0 4px 12px rgba(255, 138, 0, 0.08)',
@@ -924,7 +1057,10 @@ const LandingPage = () => {
                             mode === 'dark'
                               ? '0 8px 20px rgba(255, 178, 0, 0.15)'
                               : '0 8px 20px rgba(255, 138, 0, 0.12)',
-                          transform: 'translateY(-5px)',
+                          transform: {
+                            xs: 'translateY(-3px)',
+                            sm: 'translateY(-5px)',
+                          },
                         },
                         transition: 'all 0.3s ease',
                         display: 'flex',
@@ -940,8 +1076,11 @@ const LandingPage = () => {
                           top: -10,
                           left: -10,
                           transform: 'rotate(180deg)',
+                          display: { xs: 'none', sm: 'block' },
                         }}>
-                        <FormatQuoteIcon sx={{ fontSize: 120 }} />
+                        <FormatQuoteIcon
+                          sx={{ fontSize: { sm: 80, md: 120 } }}
+                        />
                       </Box>
                       <Box
                         sx={{
@@ -953,7 +1092,7 @@ const LandingPage = () => {
                           variant='body1'
                           sx={{
                             mb: 3,
-                            fontSize: '1.1rem',
+                            fontSize: { xs: '0.9rem', sm: '1.1rem' },
                             lineHeight: 1.7,
                             fontStyle: 'italic',
                             textAlign: 'center',
@@ -980,6 +1119,7 @@ const LandingPage = () => {
                           sx={{
                             fontWeight: 600,
                             textAlign: 'center',
+                            fontSize: { xs: '0.9rem', sm: '1rem' },
                             color: mode === 'dark' ? 'white' : 'inherit',
                           }}>
                           {testimonial.author}
@@ -991,7 +1131,10 @@ const LandingPage = () => {
                               ? 'rgba(255,255,255,0.7)'
                               : 'text.secondary'
                           }
-                          sx={{ textAlign: 'center' }}>
+                          sx={{
+                            textAlign: 'center',
+                            fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                          }}>
                           {testimonial.role}
                         </Typography>
                       </Box>
@@ -1008,15 +1151,23 @@ const LandingPage = () => {
       <Box
         id='howWeWork'
         sx={{
-          py: { xs: 8, md: 12 },
+          py: { xs: 6, sm: 8, md: 12 },
+          px: 0,
           background:
             mode === 'dark'
               ? 'linear-gradient(90deg, #8B4513 0%, #B15500 100%)'
               : `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 50%, ${theme.palette.secondary.main} 100%)`,
           color: 'white',
           textAlign: 'center',
+          width: '100%',
         }}>
-        <Container maxWidth='md'>
+        <Container
+          maxWidth='md'
+          disableGutters={isMobile}
+          sx={{
+            px: { xs: 2, sm: 3 },
+            width: '100%',
+          }}>
           <div>
             <Typography
               variant='h3'
@@ -1024,32 +1175,35 @@ const LandingPage = () => {
               sx={{
                 mb: 3,
                 fontWeight: 700,
-                fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
+                fontSize: { xs: '1.75rem', sm: '2.25rem', md: '3rem' },
               }}>
               Ready to preserve your memories?
             </Typography>
             <Typography
               variant='h6'
-              component='p'
+              component='div'
               sx={{
                 mb: 5,
                 maxWidth: '700px',
                 mx: 'auto',
                 opacity: 0.9,
-                fontSize: { xs: '1rem', sm: '1.2rem' },
+                fontSize: { xs: '0.9rem', sm: '1.1rem', md: '1.2rem' },
               }}>
               Join today and start creating a lasting collection of precious
               moments.
-              <Box
-                sx={{
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  my: 3,
-                }}>
-                <Logo size='large' withLink={false} />
-              </Box>
             </Typography>
+
+            {/* Logo placed outside of the typography element */}
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                my: 3,
+              }}>
+              <Logo size='large' withLink={false} />
+            </Box>
+
             <Box
               sx={{
                 display: 'flex',
@@ -1064,10 +1218,10 @@ const LandingPage = () => {
                 color='inherit'
                 onClick={handlePatientRegister}
                 sx={{
-                  py: 2,
-                  px: 5,
+                  py: { xs: 1.5, sm: 2 },
+                  px: { xs: 3, sm: 5 },
                   borderRadius: 2,
-                  fontSize: '1.1rem',
+                  fontSize: { xs: '0.9rem', sm: '1.1rem' },
                   fontWeight: 600,
                   textTransform: 'none',
                   boxShadow:
@@ -1086,18 +1240,19 @@ const LandingPage = () => {
                     bgcolor: 'rgba(255,255,255,0.9)',
                   },
                   transition: 'all 0.3s',
+                  width: { xs: '100%', sm: 'auto' },
                 }}>
                 Get Started Now
               </Button>
               <Button
                 variant='outlined'
                 size='large'
-                onClick={handleFamilyRegister}
+                onClick={handlePricingNavigate}
                 sx={{
-                  py: 2,
-                  px: 5,
+                  py: { xs: 1.5, sm: 2 },
+                  px: { xs: 3, sm: 5 },
                   borderRadius: 2,
-                  fontSize: '1.1rem',
+                  fontSize: { xs: '0.9rem', sm: '1.1rem' },
                   fontWeight: 600,
                   textTransform: 'none',
                   borderColor: 'rgba(255,255,255,0.5)',
@@ -1108,8 +1263,9 @@ const LandingPage = () => {
                     transform: 'translateY(-3px)',
                   },
                   transition: 'all 0.3s',
+                  width: { xs: '100%', sm: 'auto' },
                 }}>
-                Learn More
+                View Pricing
               </Button>
             </Box>
           </div>

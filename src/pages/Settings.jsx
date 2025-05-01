@@ -21,6 +21,8 @@ import {
   InputLabel,
   FormControl,
   Alert,
+  useMediaQuery,
+  useTheme as useMuiTheme,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import PersonIcon from '@mui/icons-material/Person';
@@ -33,6 +35,15 @@ import LightModeIcon from '@mui/icons-material/LightMode';
 import { AccessibilityControls, EmergencyContact } from '../components';
 import { useTheme } from '../contexts/ThemeContext';
 
+// Define breakpoints explicitly to match landing page
+const breakpoints = {
+  xs: 0,
+  sm: 576,
+  md: 768,
+  lg: 1024,
+  xl: 1200,
+};
+
 const Settings = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(0);
@@ -44,6 +55,11 @@ const Settings = () => {
 
   // Get theme from context
   const { mode, toggleTheme } = useTheme();
+  const muiTheme = useMuiTheme();
+  const isMobile = useMediaQuery(`(max-width:${breakpoints.sm}px)`);
+  const isTablet = useMediaQuery(
+    `(min-width:${breakpoints.sm}px) and (max-width:${breakpoints.md}px)`
+  );
 
   // Mock user data
   const [userData, setUserData] = useState({
@@ -91,16 +107,39 @@ const Settings = () => {
   };
 
   return (
-    <Container maxWidth='md' sx={{ mt: 2, mb: 4 }}>
+    <Container
+      maxWidth='md'
+      sx={{
+        mt: { xs: 1, sm: 2, md: 3 },
+        mb: { xs: 2, sm: 3, md: 4 },
+        px: { xs: 2, sm: 3, md: 3 },
+      }}>
       <div>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            mb: { xs: 2, sm: 3, md: 4 },
+            flexDirection: { xs: 'column', sm: 'row' },
+            gap: { xs: 1, sm: 0 },
+          }}>
           <Button
             startIcon={<ArrowBackIcon />}
             onClick={handleBack}
-            sx={{ mr: 2 }}>
+            sx={{
+              mr: { xs: 0, sm: 2 },
+              alignSelf: { xs: 'flex-start', sm: 'center' },
+            }}>
             Back
           </Button>
-          <Typography variant='h4' component='h1'>
+          <Typography
+            variant='h4'
+            component='h1'
+            sx={{
+              fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' },
+              textAlign: { xs: 'center', sm: 'left' },
+              width: { xs: '100%', sm: 'auto' },
+            }}>
             Settings
           </Typography>
         </Box>
@@ -111,47 +150,99 @@ const Settings = () => {
           </Alert>
         )}
 
-        <Paper elevation={2} sx={{ borderRadius: 3, overflow: 'hidden' }}>
+        <Paper
+          elevation={2}
+          sx={{
+            borderRadius: 3,
+            overflow: 'hidden',
+            boxShadow:
+              mode === 'dark'
+                ? '0 8px 16px rgba(0, 0, 0, 0.4)'
+                : '0 8px 16px rgba(0, 0, 0, 0.1)',
+          }}>
           <Tabs
             value={activeTab}
             onChange={handleTabChange}
-            variant='fullWidth'
-            sx={{ borderBottom: 1, borderColor: 'divider' }}>
-            <Tab icon={<PersonIcon />} label='Profile' iconPosition='start' />
+            variant={isMobile ? 'scrollable' : 'fullWidth'}
+            scrollButtons={isMobile ? 'auto' : false}
+            allowScrollButtonsMobile
+            sx={{
+              borderBottom: 1,
+              borderColor: 'divider',
+            }}>
+            <Tab
+              icon={<PersonIcon />}
+              label={isMobile ? '' : 'Profile'}
+              iconPosition='start'
+              sx={{
+                minWidth: { xs: 'auto', sm: '160px' },
+                px: { xs: 1, sm: 2 },
+              }}
+            />
             <Tab
               icon={<AccessibilityNewIcon />}
-              label='Accessibility'
+              label={isMobile ? '' : 'Accessibility'}
               iconPosition='start'
+              sx={{
+                minWidth: { xs: 'auto', sm: '160px' },
+                px: { xs: 1, sm: 2 },
+              }}
             />
             <Tab
               icon={<PeopleIcon />}
-              label='Family Connections'
+              label={isMobile ? '' : 'Family Connections'}
               iconPosition='start'
+              sx={{
+                minWidth: { xs: 'auto', sm: '160px' },
+                px: { xs: 1, sm: 2 },
+              }}
             />
             <Tab
               icon={<NotificationsIcon />}
-              label='Notifications'
+              label={isMobile ? '' : 'Notifications'}
               iconPosition='start'
+              sx={{
+                minWidth: { xs: 'auto', sm: '160px' },
+                px: { xs: 1, sm: 2 },
+              }}
             />
           </Tabs>
 
           {/* Profile Tab */}
           {activeTab === 0 && (
-            <Box sx={{ p: 3 }}>
-              <Grid container spacing={3}>
+            <Box sx={{ p: { xs: 2, sm: 3 } }}>
+              <Grid container spacing={{ xs: 2, sm: 3 }}>
                 <Grid item xs={12} md={4} sx={{ textAlign: 'center' }}>
                   <Avatar
-                    sx={{ width: 120, height: 120, mx: 'auto', mb: 2 }}
+                    sx={{
+                      width: { xs: 100, sm: 120 },
+                      height: { xs: 100, sm: 120 },
+                      mx: 'auto',
+                      mb: 2,
+                    }}
                     alt={userData.name}
                     src='/placeholder-avatar.jpg'>
                     {userData.name.charAt(0)}
                   </Avatar>
-                  <Button variant='outlined' color='primary'>
+                  <Button
+                    variant='outlined'
+                    color='primary'
+                    sx={{
+                      borderRadius: 2,
+                      textTransform: 'none',
+                      px: { xs: 2, sm: 3 },
+                    }}>
                     Change Photo
                   </Button>
                 </Grid>
                 <Grid item xs={12} md={8}>
-                  <Typography variant='h6' gutterBottom>
+                  <Typography
+                    variant='h6'
+                    gutterBottom
+                    sx={{
+                      fontSize: { xs: '1.1rem', sm: '1.25rem' },
+                      textAlign: { xs: 'center', md: 'left' },
+                    }}>
                     Personal Information
                   </Typography>
                   <Grid container spacing={2}>
@@ -184,11 +275,22 @@ const Settings = () => {
                       />
                     </Grid>
                   </Grid>
-                  <Box sx={{ mt: 3 }}>
+                  <Box
+                    sx={{
+                      mt: 3,
+                      display: 'flex',
+                      justifyContent: { xs: 'center', md: 'flex-start' },
+                    }}>
                     <Button
                       variant='contained'
                       color='primary'
-                      onClick={handleSaveProfile}>
+                      onClick={handleSaveProfile}
+                      sx={{
+                        borderRadius: 2,
+                        textTransform: 'none',
+                        px: { xs: 3, sm: 4 },
+                        py: { xs: 1, sm: 1.2 },
+                      }}>
                       Save Changes
                     </Button>
                   </Box>
@@ -199,13 +301,25 @@ const Settings = () => {
 
           {/* Accessibility Tab */}
           {activeTab === 1 && (
-            <Box sx={{ p: 3 }}>
-              <Typography variant='h6' gutterBottom>
+            <Box sx={{ p: { xs: 2, sm: 3 } }}>
+              <Typography
+                variant='h6'
+                gutterBottom
+                sx={{
+                  fontSize: { xs: '1.1rem', sm: '1.25rem' },
+                  textAlign: { xs: 'center', md: 'left' },
+                }}>
                 Display Settings
               </Typography>
 
               {/* Theme Toggle */}
-              <Box sx={{ mb: 3, display: 'flex', alignItems: 'center' }}>
+              <Box
+                sx={{
+                  mb: 3,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: { xs: 'center', sm: 'flex-start' },
+                }}>
                 <FormControlLabel
                   control={
                     <Switch
@@ -235,7 +349,12 @@ const Settings = () => {
               <Divider sx={{ my: 2 }} />
 
               <Box sx={{ mb: 4 }}>
-                <Typography id='font-size-slider' gutterBottom>
+                <Typography
+                  id='font-size-slider'
+                  gutterBottom
+                  sx={{
+                    textAlign: { xs: 'center', sm: 'left' },
+                  }}>
                   Font Size: {userData.fontSize}px
                 </Typography>
                 <Slider
@@ -267,7 +386,7 @@ const Settings = () => {
 
           {/* Family Connections Tab */}
           {activeTab === 2 && (
-            <Box sx={{ p: 3 }}>
+            <Box sx={{ p: { xs: 2, sm: 3 } }}>
               <Typography variant='h6' gutterBottom>
                 Family Members & Caregivers
               </Typography>
@@ -281,7 +400,7 @@ const Settings = () => {
 
           {/* Notifications Tab */}
           {activeTab === 3 && (
-            <Box sx={{ p: 3 }}>
+            <Box sx={{ p: { xs: 2, sm: 3 } }}>
               <Typography variant='h6' gutterBottom>
                 Notification Preferences
               </Typography>

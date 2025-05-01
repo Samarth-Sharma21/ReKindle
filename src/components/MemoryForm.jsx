@@ -169,30 +169,6 @@ const MemoryForm = ({ memoryData, setMemoryData }) => {
     }
   };
 
-  // Handle form submission
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    // Validate form
-    if (!memoryData.title) {
-      showNotification('Please enter a title for your memory', 'error');
-      return;
-    }
-
-    if (memoryType === 'photo' && !photoPreview) {
-      showNotification('Please upload a photo', 'error');
-      return;
-    }
-
-    if (memoryType === 'text' && !memoryData.content) {
-      showNotification('Please enter some text for your memory', 'error');
-      return;
-    }
-
-    // Show success message
-    showNotification('Memory saved successfully!', 'success');
-  };
-
   // Show notification
   const showNotification = (message, severity) => {
     setNotification({ open: true, message, severity });
@@ -205,234 +181,238 @@ const MemoryForm = ({ memoryData, setMemoryData }) => {
 
   return (
     <Box sx={{ width: '100%', maxWidth: 800, mx: 'auto' }}>
-      <Typography variant='h4' component='h1' gutterBottom>
-        Create New Memory
+      <Typography variant='h5' component='h2' gutterBottom sx={{ mb: 3 }}>
+        Memory Details
       </Typography>
 
-      <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
-        <form onSubmit={handleSubmit}>
-          <Grid container spacing={3}>
-            {/* Memory Type Selection */}
-            <Grid item xs={12}>
-              <FormControl fullWidth>
-                <InputLabel id='memory-type-label'>Memory Type</InputLabel>
-                <Select
-                  labelId='memory-type-label'
-                  id='memory-type'
-                  value={memoryType}
-                  label='Memory Type'
-                  onChange={handleTypeChange}>
-                  <MenuItem value='photo'>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <PhotoIcon sx={{ mr: 1 }} />
-                      Photo Memory
-                    </Box>
-                  </MenuItem>
-                  <MenuItem value='voice'>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <MicIcon sx={{ mr: 1 }} />
-                      Voice Memory
-                    </Box>
-                  </MenuItem>
-                  <MenuItem value='text'>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <TextSnippetIcon sx={{ mr: 1 }} />
-                      Text Memory
-                    </Box>
-                  </MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-
-            {/* Title */}
-            <Grid item xs={12} sm={6}>
-              <TextField
-                required
-                fullWidth
-                label='Memory Title'
-                name='title'
-                value={memoryData.title}
-                onChange={handleInputChange}
-              />
-            </Grid>
-
-            {/* Date */}
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label='Date'
-                type='date'
-                name='date'
-                value={memoryData.date}
-                onChange={handleInputChange}
-                InputLabelProps={{ shrink: true }}
-              />
-            </Grid>
-
-            {/* Location */}
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label='Location'
-                name='location'
-                value={memoryData.location || ''}
-                onChange={handleInputChange}
-                placeholder='Enter or select a location'
-                InputProps={{
-                  startAdornment: (
-                    <LocationOnIcon color='action' sx={{ mr: 1 }} />
-                  ),
-                }}
-              />
-            </Grid>
-
-            {/* People */}
-            <Grid item xs={12}>
-              <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 1 }}>
-                <TextField
-                  fullWidth
-                  label='Add People in this Memory'
-                  value={newPerson}
-                  onChange={(e) => setNewPerson(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleAddPerson()}
-                  InputProps={{
-                    startAdornment: (
-                      <PeopleIcon color='action' sx={{ mr: 1 }} />
-                    ),
-                  }}
-                  sx={{ mr: 1 }}
-                />
-                <Button
-                  variant='contained'
-                  color='primary'
-                  onClick={handleAddPerson}
-                  disabled={!newPerson.trim()}>
-                  <AddIcon />
-                </Button>
-              </Box>
-
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                {memoryData.people?.map((person) => (
-                  <Chip
-                    key={person}
-                    label={person}
-                    onDelete={() => handleRemovePerson(person)}
-                    color='primary'
-                    variant='outlined'
-                  />
-                ))}
-              </Box>
-            </Grid>
-
-            <Grid item xs={12}>
-              <Divider sx={{ my: 2 }} />
-            </Grid>
-
-            {/* Memory Content based on type */}
-            <Grid item xs={12}>
-              <Typography variant='h6' gutterBottom>
-                Memory Content
-              </Typography>
-
-              {memoryType === 'photo' && (
-                <Box>
-                  <Typography variant='h6' gutterBottom>
-                    Upload a Photo
-                  </Typography>
-                  <PhotoUploader
-                    onPhotoSelected={handlePhotoUpload}
-                    defaultImage={photoPreview}
-                  />
-
-                  {/* Photo filters */}
-                  <Box sx={{ mt: 2 }}>
-                    <Typography variant='subtitle1' gutterBottom>
-                      Photo Filter
-                    </Typography>
-                    <FormControl fullWidth sx={{ mb: 2 }}>
-                      <InputLabel id='filter-label'>Apply Filter</InputLabel>
-                      <Select
-                        labelId='filter-label'
-                        id='filter'
-                        name='filter'
-                        value={memoryData.filter || 'none'}
-                        label='Apply Filter'
-                        onChange={handleInputChange}>
-                        <MenuItem value='none'>No Filter</MenuItem>
-                        <MenuItem value='polaroid'>Polaroid Frame</MenuItem>
-                        <MenuItem value='sepia'>Sepia Tone</MenuItem>
-                        <MenuItem value='vintage'>Vintage</MenuItem>
-                      </Select>
-                    </FormControl>
-
-                    {photoPreview && (
-                      <Box sx={{ mt: 2, position: 'relative' }}>
-                        <img
-                          src={photoPreview}
-                          alt='Memory Preview'
-                          style={{
-                            width: '100%',
-                            maxHeight: '300px',
-                            objectFit: 'contain',
-                            borderRadius:
-                              memoryData.filter === 'none' ? '4px' : '0',
-                            border:
-                              memoryData.filter === 'polaroid'
-                                ? '15px solid white'
-                                : memoryData.filter === 'sepia'
-                                ? '5px solid #d4b483'
-                                : memoryData.filter === 'vintage'
-                                ? '8px solid #f5f5f5'
-                                : 'none',
-                            boxShadow:
-                              memoryData.filter !== 'none'
-                                ? '0 4px 8px rgba(0, 0, 0, 0.15)'
-                                : 'none',
-                            transform:
-                              memoryData.filter === 'polaroid'
-                                ? 'rotate(-2deg)'
-                                : 'none',
-                            filter:
-                              memoryData.filter === 'sepia'
-                                ? 'sepia(100%)'
-                                : memoryData.filter === 'vintage'
-                                ? 'grayscale(50%)'
-                                : 'none',
-                          }}
-                        />
-                      </Box>
-                    )}
+      <Box>
+        <Grid container spacing={3}>
+          {/* Memory Type Selection */}
+          <Grid item xs={12}>
+            <FormControl fullWidth>
+              <InputLabel id='memory-type-label'>Memory Type</InputLabel>
+              <Select
+                labelId='memory-type-label'
+                id='memory-type'
+                value={memoryType}
+                label='Memory Type'
+                onChange={handleTypeChange}>
+                <MenuItem value='photo'>
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <PhotoIcon sx={{ mr: 1 }} />
+                    Photo Memory
                   </Box>
-                </Box>
-              )}
-
-              {memoryType === 'voice' && (
-                <Box>
-                  <Typography variant='h6' gutterBottom>
-                    Record a Voice Memory
-                  </Typography>
-                  <VoiceRecorder onRecordingComplete={handleVoiceRecorded} />
-                </Box>
-              )}
-
-              {memoryType === 'text' && (
-                <TextField
-                  fullWidth
-                  multiline
-                  rows={6}
-                  label='Write your memory'
-                  name='content'
-                  value={memoryData.content}
-                  onChange={handleInputChange}
-                  placeholder='Share your thoughts, stories, or memories here...'
-                />
-              )}
-            </Grid>
-
-            {/* Save button will be added in the parent component after all steps are completed */}
+                </MenuItem>
+                <MenuItem value='voice'>
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <MicIcon sx={{ mr: 1 }} />
+                    Voice Memory
+                  </Box>
+                </MenuItem>
+                <MenuItem value='text'>
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <TextSnippetIcon sx={{ mr: 1 }} />
+                    Text Memory
+                  </Box>
+                </MenuItem>
+              </Select>
+            </FormControl>
           </Grid>
-        </form>
-      </Paper>
+
+          {/* Title and Date - make each field take full width on mobile */}
+          <Grid item xs={12} sm={6}>
+            <TextField
+              required
+              fullWidth
+              label='Memory Title'
+              name='title'
+              value={memoryData.title}
+              onChange={handleInputChange}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label='Date'
+              type='date'
+              name='date'
+              value={memoryData.date}
+              onChange={handleInputChange}
+              InputLabelProps={{ shrink: true }}
+            />
+          </Grid>
+
+          {/* Location */}
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              label='Location'
+              name='location'
+              value={memoryData.location || ''}
+              onChange={handleInputChange}
+              placeholder='Enter or select a location'
+              InputProps={{
+                startAdornment: (
+                  <LocationOnIcon color='action' sx={{ mr: 1 }} />
+                ),
+              }}
+            />
+          </Grid>
+
+          {/* People - ensure people input fields are properly stacked on mobile */}
+          <Grid item xs={12}>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: { xs: 'stretch', sm: 'flex-start' },
+                flexDirection: { xs: 'column', sm: 'row' },
+                gap: { xs: 2, sm: 0 },
+                mb: 1,
+              }}>
+              <TextField
+                fullWidth
+                label='Add People in this Memory'
+                value={newPerson}
+                onChange={(e) => setNewPerson(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleAddPerson()}
+                InputProps={{
+                  startAdornment: <PeopleIcon color='action' sx={{ mr: 1 }} />,
+                }}
+                sx={{ mr: { xs: 0, sm: 1 } }}
+              />
+              <Button
+                variant='contained'
+                color='primary'
+                onClick={handleAddPerson}
+                disabled={!newPerson.trim()}
+                sx={{
+                  alignSelf: { xs: 'flex-end', sm: 'auto' },
+                  minWidth: { xs: '100px', sm: 'auto' },
+                }}>
+                <AddIcon />
+              </Button>
+            </Box>
+
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+              {memoryData.people?.map((person) => (
+                <Chip
+                  key={person}
+                  label={person}
+                  onDelete={() => handleRemovePerson(person)}
+                  color='primary'
+                  variant='outlined'
+                />
+              ))}
+            </Box>
+          </Grid>
+
+          <Grid item xs={12}>
+            <Divider sx={{ my: 2 }} />
+          </Grid>
+
+          {/* Memory Content based on type */}
+          <Grid item xs={12}>
+            <Typography variant='h6' gutterBottom>
+              Memory Content
+            </Typography>
+
+            {memoryType === 'photo' && (
+              <Box>
+                <Typography variant='h6' gutterBottom>
+                  Upload a Photo
+                </Typography>
+                <PhotoUploader
+                  onPhotoSelected={handlePhotoUpload}
+                  defaultImage={photoPreview}
+                />
+
+                {/* Photo filters */}
+                <Box sx={{ mt: 2 }}>
+                  <Typography variant='subtitle1' gutterBottom>
+                    Photo Filter
+                  </Typography>
+                  <FormControl fullWidth sx={{ mb: 2 }}>
+                    <InputLabel id='filter-label'>Apply Filter</InputLabel>
+                    <Select
+                      labelId='filter-label'
+                      id='filter'
+                      name='filter'
+                      value={memoryData.filter || 'none'}
+                      label='Apply Filter'
+                      onChange={handleInputChange}>
+                      <MenuItem value='none'>No Filter</MenuItem>
+                      <MenuItem value='polaroid'>Polaroid Frame</MenuItem>
+                      <MenuItem value='sepia'>Sepia Tone</MenuItem>
+                      <MenuItem value='vintage'>Vintage</MenuItem>
+                    </Select>
+                  </FormControl>
+
+                  {photoPreview && (
+                    <Box sx={{ mt: 2, position: 'relative' }}>
+                      <img
+                        src={photoPreview}
+                        alt='Memory Preview'
+                        style={{
+                          width: '100%',
+                          maxHeight: '300px',
+                          objectFit: 'contain',
+                          borderRadius:
+                            memoryData.filter === 'none' ? '4px' : '0',
+                          border:
+                            memoryData.filter === 'polaroid'
+                              ? '15px solid white'
+                              : memoryData.filter === 'sepia'
+                              ? '5px solid #d4b483'
+                              : memoryData.filter === 'vintage'
+                              ? '8px solid #f5f5f5'
+                              : 'none',
+                          boxShadow:
+                            memoryData.filter !== 'none'
+                              ? '0 4px 8px rgba(0, 0, 0, 0.15)'
+                              : 'none',
+                          transform:
+                            memoryData.filter === 'polaroid'
+                              ? 'rotate(-2deg)'
+                              : 'none',
+                          filter:
+                            memoryData.filter === 'sepia'
+                              ? 'sepia(100%)'
+                              : memoryData.filter === 'vintage'
+                              ? 'grayscale(50%)'
+                              : 'none',
+                        }}
+                      />
+                    </Box>
+                  )}
+                </Box>
+              </Box>
+            )}
+
+            {memoryType === 'voice' && (
+              <Box>
+                <Typography variant='h6' gutterBottom>
+                  Record a Voice Memory
+                </Typography>
+                <VoiceRecorder onRecordingComplete={handleVoiceRecorded} />
+              </Box>
+            )}
+
+            {memoryType === 'text' && (
+              <TextField
+                fullWidth
+                multiline
+                rows={6}
+                label='Write your memory'
+                name='content'
+                value={memoryData.content}
+                onChange={handleInputChange}
+                placeholder='Share your thoughts, stories, or memories here...'
+              />
+            )}
+          </Grid>
+        </Grid>
+      </Box>
 
       <Snackbar
         open={notification.open}

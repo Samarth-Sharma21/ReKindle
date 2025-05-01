@@ -9,9 +9,6 @@ import {
   Container,
   Paper,
   Button,
-  Stepper,
-  Step,
-  StepLabel,
   Alert,
   Chip,
   Stack,
@@ -24,7 +21,6 @@ const AddMemory = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { triggerRefresh } = useMemory();
-  const [activeStep, setActiveStep] = useState(0);
   const [completed, setCompleted] = useState(false);
   const [error, setError] = useState('');
   const [recentLocations, setRecentLocations] = useState([]);
@@ -91,80 +87,70 @@ const AddMemory = () => {
     setMemoryData((prev) => ({ ...prev, location }));
   };
 
-  const steps = ['Create Memory', 'Add Details', 'Review & Save'];
-
-  const handleNext = async () => {
-    if (activeStep === steps.length - 1) {
-      try {
-        // Get authenticated user
-        const {
-          data: { user: authUser },
-          error: userError,
-        } = await supabase.auth.getUser();
-        if (userError || !authUser) {
-          throw new Error('User not authenticated! Please log in.');
-        }
-
-        // Determine user ID - for patients it's their own ID
-        // For family members, we need to get the patient ID
-        let userId = authUser.id;
-
-        if (user?.type === 'family') {
-          const { data: familyData, error: familyError } = await supabase
-            .from('family_members')
-            .select('patient_id')
-            .eq('id', authUser.id)
-            .single();
-
-          if (familyError || !familyData) {
-            throw new Error('Could not find connected patient');
-          }
-          userId = familyData.patient_id;
-        }
-
-        // Insert memory into Supabase without the created_by field
-        const { error } = await supabase.from('memories').insert([
-          {
-            user_id: userId, // The patient ID (whose memory it is)
-            title: memoryData.title,
-            description: memoryData.description,
-            content: memoryData.content,
-            date: memoryData.date,
-            type: memoryData.type,
-            location: memoryData.location,
-            people: memoryData.people,
-            filter: memoryData.filter,
-          },
-        ]);
-
-        if (error) throw error;
-
-        // Trigger refresh of memories in the MemoryContext
-        triggerRefresh();
-
-        setCompleted(true);
-        setTimeout(() => {
-          // Redirect based on user type
-          if (user?.type === 'family') {
-            navigate('/family/dashboard');
-          } else {
-            navigate('/patient/dashboard');
-          }
-        }, 2000);
-      } catch (err) {
-        setError(err.message);
+  const handleSaveMemory = async () => {
+    try {
+      // Get authenticated user
+      const {
+        data: { user: authUser },
+        error: userError,
+      } = await supabase.auth.getUser();
+      if (userError || !authUser) {
+        throw new Error('User not authenticated! Please log in.');
       }
-    } else {
-      setActiveStep((prevStep) => prevStep + 1);
+
+      // Determine user ID - for patients it's their own ID
+      // For family members, we need to get the patient ID
+      let userId = authUser.id;
+
+      if (user?.type === 'family') {
+        const { data: familyData, error: familyError } = await supabase
+          .from('family_members')
+          .select('patient_id')
+          .eq('id', authUser.id)
+          .single();
+
+        if (familyError || !familyData) {
+          throw new Error('Could not find connected patient');
+        }
+        userId = familyData.patient_id;
+      }
+
+      // Insert memory into Supabase without the created_by field
+      const { error } = await supabase.from('memories').insert([
+        {
+          user_id: userId, // The patient ID (whose memory it is)
+          title: memoryData.title,
+          description: memoryData.description,
+          content: memoryData.content,
+          date: memoryData.date,
+          type: memoryData.type,
+          location: memoryData.location,
+          people: memoryData.people,
+          filter: memoryData.filter,
+        },
+      ]);
+
+      if (error) throw error;
+
+      // Trigger refresh of memories in the MemoryContext
+      triggerRefresh();
+
+      setCompleted(true);
+      setTimeout(() => {
+        // Redirect based on user type
+        if (user?.type === 'family') {
+          navigate('/family/dashboard');
+        } else {
+          navigate('/patient/dashboard');
+        }
+      }, 2000);
+    } catch (err) {
+      setError(err.message);
     }
   };
 
   const handleBack = () => {
-    if (activeStep === 0) {
-      navigate(-1);
-    } else {
-      setActiveStep((prevStep) => prevStep - 1);
-    }
+    navigate(-1);
   };
 
   return (
@@ -187,21 +173,13 @@ const AddMemory = () => {
             </Alert>
           ) : (
             <>
-              <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
-                {steps.map((label) => (
-                  <Step key={label}>
-                    <StepLabel>{label}</StepLabel>
-                  </Step>
-                ))}
-              </Stepper>
-
               {error && (
                 <Alert severity='error' sx={{ mb: 3 }}>
                   {error}
                 </Alert>
               )}
 
-              {activeStep === 1 && recentLocations.length > 0 && (
+              {recentLocations.length > 0 && (
                 <Box sx={{ mb: 3 }}>
                   <Typography
                     variant='subtitle1'
@@ -247,14 +225,14 @@ const AddMemory = () => {
                   variant='outlined'
                   onClick={handleBack}
                   sx={{ borderRadius: 2 }}>
-                  Back
+                  Cancel
                 </Button>
                 <Button
                   variant='contained'
                   color='primary'
-                  onClick={handleNext}
+                  onClick={handleSaveMemory}
                   sx={{ borderRadius: 2 }}>
-                  {activeStep === steps.length - 1 ? 'Save Memory' : 'Next'}
+                  Save Memory
                 </Button>
               </Box>
             </>

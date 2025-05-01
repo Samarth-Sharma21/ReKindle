@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { CssBaseline, CircularProgress, Box } from '@mui/material';
 import './App.css';
 
@@ -45,7 +45,7 @@ const LoadingFallback = () => (
 function App() {
   return (
     <ThemeProvider>
-      <BrowserRouter>
+      <HashRouter>
         <AuthProvider>
           <MemoryProvider>
             <Suspense fallback={<LoadingFallback />}>
@@ -154,7 +154,7 @@ function App() {
             </Suspense>
           </MemoryProvider>
         </AuthProvider>
-      </BrowserRouter>
+      </HashRouter>
     </ThemeProvider>
   );
 }

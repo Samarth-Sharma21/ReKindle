@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import SpaIcon from '@mui/icons-material/Spa'; // Leaf-like icon
 import { useAuth } from '../contexts/AuthContext';
 
-const Logo = ({ size = 'medium', linkTo, withLink = true }) => {
+const Logo = ({ size = 'medium', linkTo, withLink = false }) => {
   const theme = useTheme();
   const { user } = useAuth();
 
@@ -73,7 +73,7 @@ const Logo = ({ size = 'medium', linkTo, withLink = true }) => {
   );
 
   // Return with or without link
-  if (withLink) {
+  if (withLink && user) {
     return (
       <Box
         component={Link}

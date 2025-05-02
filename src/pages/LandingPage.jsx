@@ -634,7 +634,7 @@ const LandingPage = () => {
                       mb: 4,
                       fontSize: { xs: '1.75rem', sm: '2.25rem', md: '3.2rem' },
                       fontWeight: 800,
-                      lineHeight: 1.1,
+                      lineHeight: 1.2,
                       color:
                         mode === 'dark' ? 'white' : theme.palette.text.primary,
                       background:
@@ -805,7 +805,7 @@ const LandingPage = () => {
       <Box
         id='features'
         sx={{
-          py: { xs: 6, sm: 8, md: 12 },
+          py: { xs: 3, sm: 6, md: 6 },
           px: 0,
           bgcolor:
             mode === 'dark'
@@ -829,6 +829,7 @@ const LandingPage = () => {
                 transition={{ duration: 0.6 }}>
                 <Box
                   sx={{
+                    
                     textAlign: 'center',
                     maxWidth: '700px',
                     mx: 'auto',
@@ -969,7 +970,7 @@ const LandingPage = () => {
       {/* Testimonial Section */}
       <Box
         sx={{
-          py: { xs: 6, sm: 8, md: 12 },
+          py: { xs: 3, sm: 6, md: 6 },
           px: 0,
           bgcolor: mode === 'dark' ? '#111111' : 'background.default',
           width: '100%',

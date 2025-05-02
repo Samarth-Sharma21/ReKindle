@@ -28,10 +28,12 @@ import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import Logo from '../components/Logo';
 import { Footer } from '../components';
+import { useTheme as useCustomTheme } from '../contexts/ThemeContext';
 
 const PricingPage = () => {
   const navigate = useNavigate();
   const theme = useTheme();
+  const { mode } = useCustomTheme();
   const [yearlyBilling, setYearlyBilling] = useState(false);
   const [scrollDir, setScrollDir] = useState('up');
   const [prevScrollY, setPrevScrollY] = useState(0);
@@ -133,8 +135,13 @@ const PricingPage = () => {
           elevation={0}
           sx={{
             backdropFilter: 'blur(10px)',
-            background: 'rgba(255, 255, 255, 0.9)',
-            borderBottom: `1px solid rgba(255, 138, 0, 0.12)`,
+            background: mode === 'dark' 
+              ? 'rgba(18, 18, 18, 0.9)' 
+              : 'rgba(255, 255, 255, 0.9)',
+            borderBottom: `1px solid ${mode === 'dark' 
+              ? 'rgba(255, 138, 0, 0.2)' 
+              : 'rgba(255, 138, 0, 0.12)'}`,
+            color: mode === 'dark' ? '#fff' : 'inherit',
           }}>
           <Container maxWidth='lg'>
             <Toolbar
@@ -149,7 +156,7 @@ const PricingPage = () => {
                   transformOrigin: 'left center',
                   ml: { xs: 0, sm: 0 },
                 }}>
-                <Logo size={isMobile ? 'small' : 'medium'} />
+                <Logo size={isMobile ? 'small' : 'medium'} withLink={true} linkTo="/" />
               </Box>
 
               {/* Back Button */}
@@ -314,7 +321,7 @@ const PricingPage = () => {
           container
           spacing={{ xs: 2, sm: 3, md: 4 }}
           justifyContent='center'>
-          {tiers.map((tier, index) => (
+          {tiers.map((tier) => (
             <Grid
               item
               key={tier.title}
@@ -408,7 +415,7 @@ const PricingPage = () => {
 
                   <Box sx={{ flexGrow: 1, mb: 3 }}>
                     <List sx={{ p: 0 }}>
-                      {tier.features.map((feature, i) => (
+                      {tier.features.map((feature) => (
                         <ListItem
                           key={feature}
                           disableGutters

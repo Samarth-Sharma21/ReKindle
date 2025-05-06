@@ -574,7 +574,7 @@ const LandingPage = () => {
           onMouseLeave={() => setLeftHovered(false)}
           onClick={handlePatientLogin}
           sx={{
-            flex: rightHovered ? 0.5 : leftHovered ? 1.7 : 1,
+            flex: rightHovered ? 0.5 : leftHovered ? 1.4 : 1,
             position: 'relative',
             overflow: 'hidden',
             display: 'flex',
@@ -840,7 +840,7 @@ const LandingPage = () => {
           onMouseLeave={() => setRightHovered(false)}
           onClick={handleFamilyLogin}
           sx={{
-            flex: leftHovered ? 0.5 : rightHovered ? 1.7 : 1,
+            flex: leftHovered ? 0.5 : rightHovered ? 1.4 : 1,
             position: 'relative',
             overflow: 'hidden',
             display: 'flex',

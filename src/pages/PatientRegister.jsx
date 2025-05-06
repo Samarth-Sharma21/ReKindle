@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { supabase } from './server';
+import { supabase } from '../backend/server';
 import { useNavigate, Link } from 'react-router-dom';
 import {
   Box,

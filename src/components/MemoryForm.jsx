@@ -25,7 +25,7 @@ import PeopleIcon from '@mui/icons-material/People';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import { PhotoUploader, VoiceRecorder } from './';
-import { supabase } from '../pages/server';
+import { supabase } from '../backend/server';
 
 const MemoryForm = ({ memoryData, setMemoryData }) => {
   const [memoryType, setMemoryType] = useState('photo');

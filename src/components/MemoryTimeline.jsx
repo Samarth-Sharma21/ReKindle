@@ -15,7 +15,7 @@ import ViewListIcon from '@mui/icons-material/ViewList';
 import ViewModuleIcon from '@mui/icons-material/ViewModule';
 import TimelineIcon from '@mui/icons-material/Timeline';
 import { MemoryCard } from './';
-import { supabase } from '../pages/server';
+import { supabase } from '../backend/server';
 
 const MemoryTimeline = () => {
   const [viewMode, setViewMode] = useState('grid');

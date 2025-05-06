@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { supabase, emergencyContactService } from '../backend/server';
+import { useAuth } from '../contexts/AuthContext';
 import {
   Box,
   Typography,
@@ -28,15 +30,9 @@ import AddIcon from '@mui/icons-material/Add';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 
 const EmergencyContact = () => {
-  const [contacts, setContacts] = useState([
-    { id: 1, name: 'John Smith', relationship: 'Son', phone: '(555) 123-4567' },
-    {
-      id: 2,
-      name: 'Mary Johnson',
-      relationship: 'Daughter',
-      phone: '(555) 987-6543',
-    },
-  ]);
+  const { user } = useAuth();
+  const [contacts, setContacts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [openDialog, setOpenDialog] = useState(false);
   const [editingContact, setEditingContact] = useState(null);
   const [formData, setFormData] = useState({
@@ -74,41 +70,111 @@ const EmergencyContact = () => {
     setFormData({ ...formData, [name]: value });
   };
 
+  // Fetch contacts from database on component mount
+  useEffect(() => {
+    const fetchContacts = async () => {
+      try {
+        setLoading(true);
+        // Get the current user's ID
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser();
+
+        if (userError || !user) {
+          // Fallback to local state if not authenticated
+          setLoading(false);
+          return;
+        }
+
+        const { data, error } = await emergencyContactService.getContacts(user.id);
+
+        if (error) {
+          throw error;
+        }
+
+        if (data) {
+          setContacts(data);
+        }
+      } catch (error) {
+        console.error('Error fetching contacts:', error.message);
+        showNotification('Failed to load contacts', 'error');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchContacts();
+  }, []);
+
   // Save contact (add new or update existing)
-  const handleSaveContact = () => {
+  const handleSaveContact = async () => {
     // Validate form
     if (!formData.name || !formData.phone) {
       showNotification('Name and phone number are required', 'error');
       return;
     }
 
-    if (editingContact) {
-      // Update existing contact
-      setContacts(
-        contacts.map((contact) =>
-          contact.id === editingContact.id
-            ? { ...contact, ...formData }
-            : contact
-        )
-      );
-      showNotification('Contact updated successfully', 'success');
-    } else {
-      // Add new contact
-      const newContact = {
-        id: Date.now(),
-        ...formData,
-      };
-      setContacts([...contacts, newContact]);
-      showNotification('Contact added successfully', 'success');
+    try {
+      // Get the current user's ID
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError || !user) {
+        throw new Error('User not authenticated');
+      }
+
+      if (editingContact) {
+        // Update existing contact in database
+        const contactId = editingContact.id;
+        await emergencyContactService.updateContact(formData, contactId);
+
+        // Update in local state
+        setContacts(
+          contacts.map((contact) =>
+            contact.id === editingContact.id
+              ? { ...contact, ...formData }
+              : contact
+          )
+        );
+        showNotification('Contact updated successfully', 'success');
+      } else {
+        // Add new contact to database
+        const { data, error } = await emergencyContactService.saveContact(
+          formData,
+          user.id
+        );
+
+        if (error) throw error;
+
+        // Add to local state (use the returned data if available, otherwise use the input)
+        const newContact = data?.[0] || {
+          ...formData,
+          id: Date.now().toString(),
+        };
+        setContacts([...contacts, newContact]);
+        showNotification('Contact added successfully', 'success');
+      }
+    } catch (error) {
+      console.error('Error saving contact:', error.message);
+      showNotification('Failed to save contact', 'error');
     }
 
     setOpenDialog(false);
   };
 
   // Delete a contact
-  const handleDeleteContact = (id) => {
-    setContacts(contacts.filter((contact) => contact.id !== id));
-    showNotification('Contact deleted', 'success');
+  const handleDeleteContact = async (id) => {
+    try {
+      await emergencyContactService.deleteContact(id);
+      setContacts(contacts.filter((contact) => contact.id !== id));
+      showNotification('Contact deleted', 'success');
+    } catch (error) {
+      console.error('Error deleting contact:', error.message);
+      showNotification('Failed to delete contact', 'error');
+    }
   };
 
   // Simulate sending an emergency notification

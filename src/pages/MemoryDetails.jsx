@@ -23,7 +23,7 @@ import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ShareIcon from '@mui/icons-material/Share';
-import { supabase } from '../pages/server';
+import { supabase } from '../backend/server';
 import AudioPlayer from '../components/AudioPlayer';
 
 const MemoryDetails = () => {
@@ -37,9 +37,12 @@ const MemoryDetails = () => {
     const fetchMemory = async () => {
       try {
         // Get the current user's ID
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser();
         if (userError || !user) {
-          throw new Error("User not authenticated");
+          throw new Error('User not authenticated');
         }
 
         // First, get the memory
@@ -102,10 +105,7 @@ const MemoryDetails = () => {
 
   const handleDelete = async () => {
     try {
-      const { error } = await supabase
-        .from('memories')
-        .delete()
-        .eq('id', id);
+      const { error } = await supabase.from('memories').delete().eq('id', id);
 
       if (error) throw error;
 
@@ -223,7 +223,9 @@ const MemoryDetails = () => {
 
   if (loading) {
     return (
-      <Container maxWidth='md' sx={{ mt: 4, mb: 4, display: 'flex', justifyContent: 'center' }}>
+      <Container
+        maxWidth='md'
+        sx={{ mt: 4, mb: 4, display: 'flex', justifyContent: 'center' }}>
         <CircularProgress />
       </Container>
     );

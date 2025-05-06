@@ -135,12 +135,15 @@ const PricingPage = () => {
           elevation={0}
           sx={{
             backdropFilter: 'blur(10px)',
-            background: mode === 'dark' 
-              ? 'rgba(18, 18, 18, 0.9)' 
-              : 'rgba(255, 255, 255, 0.9)',
-            borderBottom: `1px solid ${mode === 'dark' 
-              ? 'rgba(255, 138, 0, 0.2)' 
-              : 'rgba(255, 138, 0, 0.12)'}`,
+            background:
+              mode === 'dark'
+                ? 'rgba(18, 18, 18, 0.9)'
+                : 'rgba(255, 255, 255, 0.9)',
+            borderBottom: `1px solid ${
+              mode === 'dark'
+                ? 'rgba(255, 138, 0, 0.2)'
+                : 'rgba(255, 138, 0, 0.12)'
+            }`,
             color: mode === 'dark' ? '#fff' : 'inherit',
           }}>
           <Container maxWidth='lg'>
@@ -156,7 +159,11 @@ const PricingPage = () => {
                   transformOrigin: 'left center',
                   ml: { xs: 0, sm: 0 },
                 }}>
-                <Logo size={isMobile ? 'small' : 'medium'} withLink={true} linkTo="/" />
+                <Logo
+                  size={isMobile ? 'small' : 'medium'}
+                  withLink={true}
+                  linkTo='/'
+                />
               </Box>
 
               {/* Back Button */}

@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { supabase, locationService } from '../backend/server';
+import { useAuth } from '../contexts/AuthContext';
 import {
   Box,
   Typography,
@@ -25,29 +27,48 @@ import AddIcon from '@mui/icons-material/Add';
 import MyLocationIcon from '@mui/icons-material/MyLocation';
 
 const LocationTracker = () => {
+  const { user } = useAuth();
   const [currentLocation, setCurrentLocation] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [savedLocations, setSavedLocations] = useState([
-    {
-      id: 1,
-      name: 'Home',
-      address: '123 Main Street, Anytown, USA',
-      isHome: true,
-    },
-    {
-      id: 2,
-      name: "Doctor's Office",
-      address: '456 Medical Plaza, Anytown, USA',
-      isHome: false,
-    },
-    {
-      id: 3,
-      name: 'Favorite Park',
-      address: '789 Green Avenue, Anytown, USA',
-      isHome: false,
-    },
-  ]);
+  const [savedLocations, setSavedLocations] = useState([]);
+  
+  // Fetch saved locations from database
+  useEffect(() => {
+    const fetchLocations = async () => {
+      try {
+        setLoading(true);
+        // Get the current user's ID
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser();
+
+        if (userError || !user) {
+          // Fallback to local state if not authenticated
+          setLoading(false);
+          return;
+        }
+
+        const { data, error } = await locationService.getLocations(user.id);
+
+        if (error) {
+          throw error;
+        }
+
+        if (data && data.length > 0) {
+          setSavedLocations(data);
+        }
+      } catch (error) {
+        console.error('Error fetching locations:', error.message);
+        setError('Failed to load saved locations');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLocations();
+  }, []);
   const [newLocationName, setNewLocationName] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
   const [notification, setNotification] = useState({
@@ -92,42 +113,91 @@ const LocationTracker = () => {
   };
 
   // Save current location
-  const saveCurrentLocation = () => {
+  const saveCurrentLocation = async () => {
     if (!currentLocation || !newLocationName.trim()) {
       showNotification('Please provide a name for this location', 'error');
       return;
     }
 
-    const newLocation = {
-      id: Date.now(),
-      name: newLocationName,
-      address: currentLocation.address,
-      lat: currentLocation.lat,
-      lng: currentLocation.lng,
-      isHome: false,
-    };
+    try {
+      // Get the current user's ID
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
 
-    setSavedLocations([...savedLocations, newLocation]);
-    setNewLocationName('');
-    setShowAddForm(false);
-    showNotification('Location saved successfully', 'success');
+      if (userError || !user) {
+        throw new Error('User not authenticated');
+      }
+
+      const newLocation = {
+        name: newLocationName,
+        address: currentLocation.address,
+        lat: currentLocation.lat,
+        lng: currentLocation.lng,
+        isHome: false,
+      };
+
+      // Save to database
+      const { data, error } = await locationService.saveLocation(newLocation, user.id);
+
+      if (error) throw error;
+
+      // Add to local state (use the returned data if available, otherwise use the input)
+      const locationWithId = data?.[0] || {
+        ...newLocation,
+        id: Date.now().toString(),
+      };
+      
+      setSavedLocations([...savedLocations, locationWithId]);
+      setNewLocationName('');
+      setShowAddForm(false);
+      showNotification('Location saved successfully', 'success');
+    } catch (error) {
+      console.error('Error saving location:', error.message);
+      showNotification('Failed to save location', 'error');
+    }
   };
 
   // Set a location as home
-  const setAsHome = (id) => {
-    setSavedLocations(
-      savedLocations.map((location) => ({
-        ...location,
-        isHome: location.id === id,
-      }))
-    );
-    showNotification('Home location updated', 'success');
+  const setAsHome = async (id) => {
+    try {
+      // Update in database
+      const locationToUpdate = savedLocations.find(loc => loc.id === id);
+      if (locationToUpdate) {
+        await locationService.updateLocation(
+          { ...locationToUpdate, isHome: true },
+          id
+        );
+      }
+      
+      // Update in local state
+      setSavedLocations(
+        savedLocations.map((location) => ({
+          ...location,
+          isHome: location.id === id,
+        }))
+      );
+      showNotification('Home location updated', 'success');
+    } catch (error) {
+      console.error('Error updating home location:', error.message);
+      showNotification('Failed to update home location', 'error');
+    }
   };
 
   // Delete a saved location
-  const deleteLocation = (id) => {
-    setSavedLocations(savedLocations.filter((location) => location.id !== id));
-    showNotification('Location deleted', 'success');
+  const deleteLocation = async (id) => {
+    try {
+      // Delete from database
+      await locationService.deleteLocation(id);
+      
+      // Update local state
+      setSavedLocations(savedLocations.filter((location) => location.id !== id));
+      showNotification('Location deleted', 'success');
+    } catch (error) {
+      console.error('Error deleting location:', error.message);
+      showNotification('Failed to delete location', 'error');
+    }
   };
 
   // Share a location

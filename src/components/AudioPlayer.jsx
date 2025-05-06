@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Box, IconButton, Typography } from '@mui/material';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import PauseIcon from '@mui/icons-material/Pause';
-import { supabase } from '../pages/server';
+import { supabase } from '../backend/server';
 
 const AudioPlayer = ({ filePath, showControls = true }) => {
   const [audioUrl, setAudioUrl] = useState(null);
@@ -14,9 +14,9 @@ const AudioPlayer = ({ filePath, showControls = true }) => {
     const fetchAudio = async () => {
       try {
         // Get the public URL from Supabase storage
-        const { data: { publicUrl } } = supabase.storage
-          .from('memories')
-          .getPublicUrl(filePath);
+        const {
+          data: { publicUrl },
+        } = supabase.storage.from('memories').getPublicUrl(filePath);
 
         console.log('Fetched audio URL:', publicUrl);
         setAudioUrl(publicUrl);
@@ -52,7 +52,7 @@ const AudioPlayer = ({ filePath, showControls = true }) => {
 
   if (error) {
     return (
-      <Typography color="error" sx={{ mb: 2 }}>
+      <Typography color='error' sx={{ mb: 2 }}>
         {error}
       </Typography>
     );
@@ -60,7 +60,7 @@ const AudioPlayer = ({ filePath, showControls = true }) => {
 
   return (
     <Box sx={{ width: '100%' }}>
-      <audio 
+      <audio
         ref={audioRef}
         src={audioUrl}
         controls={showControls}
@@ -94,4 +94,4 @@ const AudioPlayer = ({ filePath, showControls = true }) => {
   );
 };
 
-export default AudioPlayer; 
+export default AudioPlayer;

@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   Box,
   Typography,
@@ -30,10 +30,25 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import CelebrationIcon from '@mui/icons-material/Celebration';
 import DarkModeOutlinedIcon from '@mui/icons-material/DarkModeOutlined';
 import LightModeOutlinedIcon from '@mui/icons-material/LightModeOutlined';
+import PersonIcon from '@mui/icons-material/Person';
+import FamilyRestroomIcon from '@mui/icons-material/FamilyRestroom';
 import Logo from '../components/Logo';
 import { Footer } from '../components';
 import Chatbot from '../components/Chatbot';
 import { useTheme as useCustomTheme } from '../contexts/ThemeContext';
+import {
+  motion,
+  AnimatePresence,
+  useMotionValue,
+  useTransform,
+} from 'framer-motion';
+import patientImage1 from '../assets/patient side.jpg';
+import patientImage2 from '../assets/Patient side 2.jpg';
+import patientImage3 from '../assets/patient side 3.jpg';
+import familyImage1 from '../assets/family side.jpg';
+import familyImage2 from '../assets/family side 2.jpg';
+import familyImage3 from '../assets/familyillustration.jpg';
+import { Link } from 'react-router-dom';
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -41,7 +56,66 @@ const LandingPage = () => {
   const { mode, toggleTheme } = useCustomTheme();
   const [scrollDir, setScrollDir] = useState('up');
   const [prevScrollY, setPrevScrollY] = useState(0);
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  // Improved responsive breakpoints
+  const isExtraSmallMobile = useMediaQuery('(max-width:375px)');
+  const isMobile = useMediaQuery('(max-width:450px)');
+  const isTablet = useMediaQuery('(min-width:451px) and (max-width:900px)');
+  const isSmallTablet = useMediaQuery(
+    '(min-width:451px) and (max-width:650px)'
+  );
+  const isLargeTablet = useMediaQuery(
+    '(min-width:651px) and (max-width:900px)'
+  );
+  const isLaptop = useMediaQuery('(min-width:901px) and (max-width:1200px)');
+  const isDesktop = useMediaQuery('(min-width:1201px)');
+  const isExtraLargeDesktop = useMediaQuery('(min-width:1600px)');
+
+  // State for hover effects
+  const [leftHovered, setLeftHovered] = useState(false);
+  const [rightHovered, setRightHovered] = useState(false);
+
+  // State for image cycling
+  const [leftImageIndex, setLeftImageIndex] = useState(0);
+  const [rightImageIndex, setRightImageIndex] = useState(0);
+
+  // Arrays of images for cycling
+  const patientImages = [patientImage1, patientImage2, patientImage3];
+  const familyImages = [familyImage1, familyImage2, familyImage3];
+
+  // Functions to cycle images on hover
+  const cycleLeftImage = () => {
+    setLeftHovered(true);
+    setLeftImageIndex((prevIndex) => (prevIndex + 1) % patientImages.length);
+  };
+
+  const cycleRightImage = () => {
+    setRightHovered(true);
+    setRightImageIndex((prevIndex) => (prevIndex + 1) % familyImages.length);
+  };
+
+  // Refs for split panels
+  const leftPanelRef = useRef(null);
+  const rightPanelRef = useRef(null);
+
+  // Text animation state
+  const [loopTextIndex, setLoopTextIndex] = useState(0);
+  const loopTexts = [
+    'Preserve your precious memories',
+    'Cherish moments that matter',
+    'Build your digital legacy',
+    'Connect across generations',
+    'Remember the beautiful journey',
+  ];
+
+  // Loop text animation effect
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setLoopTextIndex((prevIndex) => (prevIndex + 1) % loopTexts.length);
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -107,20 +181,32 @@ const LandingPage = () => {
     { value: 'Our Vision', label: 'Enhance memory recall for all' },
   ];
 
-  const testimonials = [
-    {
-      quote:
-        'ReKindle has transformed how we connect with our father. The app makes it easy to share memories and stay connected despite the distance.',
-      author: 'Sarah Thompson',
-      role: 'Family Member',
-    },
-    {
-      quote:
-        'As someone with early-stage dementia, this app has been invaluable for preserving my memories and maintaining independence.',
-      author: 'Robert Miller',
-      role: 'Patient',
-    },
-  ];
+  // Mouse position animation
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  // Transform mouse position to percentage
+  const mouseXPercent = useTransform(
+    mouseX,
+    [0, window.innerWidth],
+    ['0%', '100%']
+  );
+  const mouseYPercent = useTransform(
+    mouseY,
+    [0, window.innerHeight],
+    ['0%', '100%']
+  );
+
+  // Track mouse position for interactive effects
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      mouseX.set(e.clientX);
+      mouseY.set(e.clientY);
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, [mouseX, mouseY]);
 
   return (
     <Box
@@ -130,6 +216,10 @@ const LandingPage = () => {
         minHeight: '100vh',
         overflow: 'hidden',
         width: '100%',
+        maxWidth: '100%',
+        margin: 0,
+        padding: 0,
+        boxSizing: 'border-box',
       }}>
       {/* Chatbot */}
       <Chatbot />
@@ -151,22 +241,86 @@ const LandingPage = () => {
                 ? 'rgba(255, 138, 0, 0.2)'
                 : 'rgba(255, 138, 0, 0.12)'
             }`,
+            width: '100%',
+            maxWidth: '100%',
+            left: 0,
+            right: 0,
+            margin: 0,
+            boxSizing: 'border-box',
+            zIndex: 1100,
           }}>
-          <Container maxWidth='lg'>
+          <Container
+            maxWidth={false}
+            disableGutters
+            sx={{
+              px: {
+                xs: 2,
+                sm: isSmallTablet ? 2 : 3,
+                md: 4,
+                lg: isDesktop ? 6 : 5,
+              },
+              width: '100%',
+              margin: 0,
+              boxSizing: 'border-box',
+              maxWidth: {
+                lg: '1400px',
+                xl: isExtraLargeDesktop ? '1800px' : '1600px',
+              },
+              mx: {
+                lg: 'auto',
+              },
+            }}>
             <Toolbar
               disableGutters
-              sx={{ justifyContent: 'space-between', py: 1 }}>
+              sx={{
+                justifyContent: 'space-between',
+                py: { xs: 0.5, sm: 0.8, md: 1 },
+                height: { xs: 60, sm: 70, md: 80 },
+              }}>
               {/* Brand Logo/Name */}
               <Box
+                component={Link}
+                to='/'
                 sx={{
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'flex-start',
-                  transform: { xs: 'scale(0.9)', sm: 'scale(1.2)' },
+                  transform: {
+                    xs: 'scale(0.8)',
+                    sm: 'scale(0.9)',
+                    md: 'scale(1.1)',
+                    lg: 'scale(1.2)',
+                  },
                   transformOrigin: 'left center',
                   ml: { xs: 0, sm: 0 },
+                  textDecoration: 'none',
+                  position: 'relative',
+                  '&::after': {
+                    content: '""',
+                    position: 'absolute',
+                    bottom: -5,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    width: 0,
+                    height: 2,
+                    background: theme.palette.primary.main,
+                    transition: 'width 0.3s ease',
+                  },
+                  '&:hover::after': {
+                    width: '70%',
+                  },
                 }}>
-                <Logo size={isMobile ? 'small' : 'medium'} />
+                <Logo
+                  size={
+                    isExtraSmallMobile
+                      ? 'tiny'
+                      : isMobile
+                      ? 'small'
+                      : isTablet
+                      ? 'small'
+                      : 'medium'
+                  }
+                />
               </Box>
 
               {/* Navigation */}
@@ -188,8 +342,29 @@ const LandingPage = () => {
                     fontWeight: 500,
                     color:
                       mode === 'dark' ? 'rgba(255,255,255,0.85)' : 'inherit',
-                    '&:hover': { color: theme.palette.primary.main },
+                    '&:hover': {
+                      color: theme.palette.primary.main,
+                      transform: 'translateY(-2px)',
+                    },
+                    transition: 'all 0.2s ease',
                     textTransform: 'none',
+                    fontSize: { md: '0.9rem', lg: '1rem' },
+                    position: 'relative',
+                    '&::after': {
+                      content: '""',
+                      position: 'absolute',
+                      bottom: 6,
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      width: 0,
+                      height: 2,
+                      borderRadius: '4px',
+                      background: theme.palette.primary.main,
+                      transition: 'width 0.3s ease',
+                    },
+                    '&:hover::after': {
+                      width: '70%',
+                    },
                   }}>
                   Our Approach
                 </Button>
@@ -207,6 +382,7 @@ const LandingPage = () => {
                       mode === 'dark' ? 'rgba(255,255,255,0.85)' : 'inherit',
                     '&:hover': { color: theme.palette.primary.main },
                     textTransform: 'none',
+                    fontSize: isLaptop ? '0.9rem' : '1rem',
                   }}>
                   Features
                 </Button>
@@ -221,6 +397,7 @@ const LandingPage = () => {
                       mode === 'dark' ? 'rgba(255,255,255,0.85)' : 'inherit',
                     '&:hover': { color: theme.palette.primary.main },
                     textTransform: 'none',
+                    fontSize: isLaptop ? '0.9rem' : '1rem',
                   }}>
                   Pricing
                 </Button>
@@ -265,6 +442,15 @@ const LandingPage = () => {
                     textTransform: 'none',
                     fontWeight: 600,
                     display: { xs: 'none', sm: 'flex' },
+                    fontSize: { sm: '0.8rem', md: '0.9rem' },
+                    px: { sm: 1.5, md: 2 },
+                    py: { sm: 0.5, md: 0.8 },
+                    boxShadow: 'none',
+                    '&:hover': {
+                      boxShadow: '0 2px 8px rgba(255, 138, 0, 0.15)',
+                      transform: 'translateY(-2px)',
+                    },
+                    transition: 'all 0.3s',
                   }}>
                   How it Works
                 </Button>
@@ -276,10 +462,21 @@ const LandingPage = () => {
                     borderRadius: 2,
                     textTransform: 'none',
                     fontWeight: 600,
-                    fontSize: { xs: '0.8rem', sm: 'inherit' },
-                    px: { xs: 2, sm: 3 },
+                    fontSize: {
+                      xs: '0.75rem',
+                      sm: isSmallTablet ? '0.77rem' : '0.8rem',
+                      md: '0.9rem',
+                    },
+                    px: { xs: 1.5, sm: 2, md: 3 },
+                    py: { xs: 0.5, sm: 0.8, md: 1 },
+                    boxShadow: 'none',
+                    '&:hover': {
+                      boxShadow: '0 2px 8px rgba(255, 138, 0, 0.15)',
+                      transform: 'translateY(-2px)',
+                    },
+                    transition: 'all 0.3s',
                   }}>
-                  Get Started
+                  Join Now
                 </Button>
               </Box>
             </Toolbar>
@@ -287,226 +484,632 @@ const LandingPage = () => {
         </AppBar>
       </Slide>
 
-      {/* Hero Section with reduced side padding on mobile */}
+      {/* New Split Hero Section */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.8 }}
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background:
+            mode === 'dark'
+              ? 'radial-gradient(circle at 50% 50%, rgba(255, 138, 0, 0.06) 0%, transparent 60%)'
+              : 'radial-gradient(circle at 50% 50%, rgba(255, 138, 0, 0.04) 0%, transparent 60%)',
+          pointerEvents: 'none',
+          zIndex: 0,
+        }}
+      />
+
+      {/* Mouse position gradient effect */}
+      <Box
+        component={motion.div}
+        sx={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          pointerEvents: 'none',
+          zIndex: 0,
+          opacity: 0.6,
+        }}
+        style={{
+          background:
+            mode === 'dark'
+              ? `radial-gradient(circle at ${mouseXPercent} ${mouseYPercent}, rgba(255, 138, 0, 0.08) 0%, transparent 50%)`
+              : `radial-gradient(circle at ${mouseXPercent} ${mouseYPercent}, rgba(255, 138, 0, 0.05) 0%, transparent 50%)`,
+        }}
+      />
+
       <Box
         sx={{
           position: 'relative',
           overflow: 'hidden',
-          marginTop: { xs: 7, sm: 8, md: 10.5 },
-          background:
-            mode === 'dark'
-              ? 'linear-gradient(90deg, #8B4513 0%, #B15500 100%)'
-              : `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 50%, ${theme.palette.secondary.main} 100%)`,
-          pt: { xs: 8, sm: 12, md: 16 },
-          pb: { xs: 6, sm: 8, md: 12 },
-          px: 0,
+          marginTop: {
+            xs: 7,
+            sm: 8,
+            md: 10.5,
+            lg: 11,
+          },
+          height: {
+            xs: 'auto',
+            sm: '65vh',
+            md: '80vh',
+            lg: '90vh',
+          },
+          maxHeight: {
+            xs: '100%',
+            sm: 650,
+            md: 800,
+            lg: 900,
+            xl: 1000,
+          },
+          minHeight: {
+            xs: isExtraSmallMobile ? 220 : 'unset',
+            sm: 450,
+            md: 550,
+            lg: 650,
+          },
+          display: 'flex',
+          flexDirection: {
+            xs: 'column',
+            md: 'row',
+          },
+          width: '100%',
+          maxWidth: '100%',
+          zIndex: 1,
         }}>
-        {/* Background Elements */}
+        {/* Left Half - Individual */}
         <Box
+          ref={leftPanelRef}
+          component={motion.div}
+          initial={{ x: isMobile || isTablet ? 0 : -50, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ duration: 0.7 }}
+          onMouseEnter={cycleLeftImage}
+          onMouseLeave={() => setLeftHovered(false)}
+          onClick={handlePatientLogin}
           sx={{
-            position: 'absolute',
-            top: '-5%',
-            right: '-10%',
-            width: { xs: '300px', sm: '400px', md: '500px' },
-            height: { xs: '300px', sm: '400px', md: '500px' },
-            borderRadius: '50%',
-            background: 'rgba(255, 255, 255, 0.08)',
-            zIndex: 0,
-            display: { xs: 'none', sm: 'block' },
-          }}
-        />
-        <Box
-          sx={{
-            position: 'absolute',
-            bottom: '-15%',
-            left: '-5%',
-            width: { xs: '250px', sm: '300px', md: '400px' },
-            height: { xs: '250px', sm: '300px', md: '400px' },
-            borderRadius: '50%',
-            background: 'rgba(255, 255, 255, 0.05)',
-            zIndex: 0,
-            display: { xs: 'none', sm: 'block' },
-          }}
-        />
-
-        <Container
-          maxWidth='lg'
-          disableGutters={isMobile}
-          sx={{
+            flex: rightHovered ? 0.5 : leftHovered ? 1.7 : 1,
             position: 'relative',
-            zIndex: 1,
-            px: { xs: 2, sm: 3 },
-            width: '100%',
-            maxWidth: '100%',
+            overflow: 'hidden',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            py: {
+              xs: 5,
+              sm: 4,
+              md: 3,
+              lg: 0,
+            },
+            px: {
+              xs: 2,
+              sm: 2,
+              md: 3,
+              lg: 4,
+            },
+            bgcolor: mode === 'dark' ? '#1e1e1e' : '#f5f5f5',
+            transition: 'all 0.6s cubic-bezier(0.25, 0.8, 0.25, 1)',
+            cursor: 'pointer',
+            height: {
+              xs: isExtraSmallMobile ? '35vh' : '38vh',
+              sm: isSmallTablet ? '40vh' : '42vh',
+              md: '100%',
+            },
+            minHeight: {
+              xs: isExtraSmallMobile ? 200 : 220,
+              sm: isSmallTablet ? 250 : 300,
+              md: 450,
+              lg: 550,
+            },
+            transform: leftHovered
+              ? {
+                  xs: 'none',
+                  sm: isSmallTablet ? 'scale(1.01)' : 'scale(1.015)',
+                  md: 'scale(1.02)',
+                }
+              : 'none',
+            zIndex: leftHovered ? 10 : 1,
+            boxShadow: leftHovered
+              ? mode === 'dark'
+                ? '0 4px 20px rgba(0, 0, 0, 0.3)'
+                : '0 4px 20px rgba(0, 0, 0, 0.1)'
+              : 'none',
+            borderTop:
+              leftHovered && (isMobile || isTablet)
+                ? mode === 'dark'
+                  ? '2px solid rgba(255, 138, 0, 0.3)'
+                  : '2px solid rgba(255, 138, 0, 0.2)'
+                : 'none',
+            borderRight:
+              leftHovered && !isMobile && !isTablet
+                ? mode === 'dark'
+                  ? '1px solid rgba(255, 138, 0, 0.2)'
+                  : '1px solid rgba(255, 138, 0, 0.1)'
+                : 'none',
           }}>
-          <Grid container spacing={3} alignItems='center'>
-            <Grid item xs={12} sx={{ textAlign: 'center', mx: 'auto' }}>
-              <div>
-                <Typography
-                  component='h1'
-                  sx={{
-                    fontSize: {
-                      xs: '2rem',
-                      sm: '2.5rem',
-                      md: '3.5rem',
-                      lg: '4.5rem',
-                    },
-                    fontWeight: 700,
-                    lineHeight: 1.1,
-                    mb: { xs: 2, sm: 3 },
-                    color: 'white',
-                    textAlign: 'center',
-                    fontFamily: '"Playfair Display", serif',
-                    textShadow:
-                      mode === 'dark' ? '0 2px 10px rgba(0,0,0,0.3)' : 'none',
-                  }}>
-                  Transform Uncertain into{' '}
-                  <Box
-                    component='span'
+          {/* Background Image (cycles on hover) */}
+          <Box
+            component={motion.div}
+            animate={{
+              opacity: leftHovered ? 0.3 : 0,
+              scale: leftHovered ? 1.05 : 1,
+            }}
+            transition={{ duration: 0.7 }}
+            sx={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundImage: `url(${patientImages[leftImageIndex]})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              zIndex: 1,
+              filter: leftHovered ? 'blur(0px)' : 'blur(2px)',
+            }}
+          />
+
+          {/* Content */}
+          <Box
+            component={motion.div}
+            animate={{
+              y: leftHovered ? -15 : 0,
+              scale: leftHovered ? 1.05 : 1,
+            }}
+            transition={{ duration: 0.5, ease: 'easeOut' }}
+            sx={{
+              position: 'relative',
+              zIndex: 10,
+              p: { xs: 1.5, sm: 2, md: 3 },
+              maxWidth: { xs: '100%', sm: 350, md: leftHovered ? 500 : 450 },
+              width: '100%',
+              textAlign: 'center',
+            }}>
+            <motion.div
+              whileHover={{ rotate: 5, scale: 1.1 }}
+              transition={{ duration: 0.3, type: 'spring', stiffness: 300 }}>
+              <PersonIcon
+                sx={{
+                  fontSize: { xs: 60, sm: 70, md: 90 },
+                  color: theme.palette.primary.main,
+                  mb: { xs: 1, sm: 2 },
+                }}
+              />
+            </motion.div>
+
+            <Typography
+              variant='h2'
+              sx={{
+                fontSize: {
+                  xs: isExtraSmallMobile ? '1.1rem' : '1.3rem',
+                  sm: isSmallTablet ? '1.4rem' : '1.6rem',
+                  md: '2rem',
+                  lg: '2.5rem',
+                  xl: '3rem',
+                },
+                fontWeight: 700,
+                mb: { xs: 1, sm: 1.5 },
+                color: mode === 'dark' ? 'white' : 'text.primary',
+                fontFamily: '"Playfair Display", serif',
+              }}>
+              Individual
+            </Typography>
+
+            {/* Animated Text Loop for Individual */}
+            <Box
+              sx={{
+                height: {
+                  xs: isExtraSmallMobile ? 40 : 45,
+                  sm: isSmallTablet ? 45 : 55,
+                  md: 60,
+                },
+                overflow: 'hidden',
+                position: 'relative',
+                mb: { xs: 1.5, sm: 2 },
+              }}>
+              <AnimatePresence mode='wait'>
+                <motion.div
+                  key={loopTextIndex}
+                  initial={{ y: 40, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: -40, opacity: 0 }}
+                  transition={{ duration: 0.5 }}>
+                  <Typography
+                    variant='body1'
                     sx={{
+                      textAlign: 'center',
                       color:
                         mode === 'dark'
-                          ? '#FFB84D'
-                          : theme.palette.secondary.light,
-                      fontStyle: 'italic',
-                      letterSpacing: '0.03em',
-                    }}>
-                    Undeniable
-                  </Box>
-                </Typography>
-
-                <Typography
-                  variant='h5'
-                  sx={{
-                    fontSize: { xs: '1rem', sm: '1.2rem', md: '1.4rem' },
-                    lineHeight: 1.6,
-                    mb: { xs: 3, sm: 4 },
-                    maxWidth: '600px',
-                    color: 'rgba(255,255,255,0.9)',
-                    textAlign: 'center',
-                    mx: 'auto',
-                    px: { xs: 2, sm: 0 },
-                    textShadow:
-                      mode === 'dark' ? '0 1px 5px rgba(0,0,0,0.2)' : 'none',
-                  }}>
-                  The ultimate memory preservation platform, making memories
-                  last forever.
-                </Typography>
-
-                <Box
-                  sx={{
-                    display: 'flex',
-                    gap: { xs: 2, sm: 3 },
-                    flexWrap: { xs: 'wrap', sm: 'nowrap' },
-                    justifyContent: 'center',
-                  }}>
-                  <Button
-                    variant='contained'
-                    color={mode === 'dark' ? 'inherit' : 'secondary'}
-                    size={isMobile ? 'medium' : 'large'}
-                    onClick={handlePatientRegister}
-                    sx={{
-                      py: { xs: 1.5, sm: 1.8 },
-                      px: { xs: 2, sm: 3 },
-                      borderRadius: 2,
-                      fontSize: { xs: '0.9rem', sm: '1rem' },
-                      fontWeight: 600,
-                      textTransform: 'none',
-                      boxShadow:
-                        mode === 'dark' ? theme.shadows[6] : theme.shadows[4],
-                      minWidth: { xs: '140px', sm: '180px' },
-                      bgcolor: mode === 'dark' ? 'white' : undefined,
-                      color: mode === 'dark' ? '#B15500' : undefined,
-                      '&:hover': {
-                        boxShadow:
-                          mode === 'dark'
-                            ? theme.shadows[10]
-                            : theme.shadows[8],
-                        transform: 'translateY(-3px)',
-                        bgcolor:
-                          mode === 'dark' ? 'rgba(255,255,255,0.9)' : undefined,
+                          ? 'rgba(255,255,255,0.8)'
+                          : 'text.secondary',
+                      maxWidth: '90%',
+                      mx: 'auto',
+                      fontSize: {
+                        xs: isExtraSmallMobile ? '0.7rem' : '0.8rem',
+                        sm: isSmallTablet ? '0.8rem' : '0.9rem',
+                        md: '1rem',
                       },
-                      transition: 'all 0.3s',
                     }}>
-                    Get Started
-                  </Button>
-
-                  <Button
-                    variant='outlined'
-                    size={isMobile ? 'medium' : 'large'}
-                    onClick={handleFamilyRegister}
-                    sx={{
-                      py: { xs: 1.5, sm: 1.8 },
-                      px: { xs: 2, sm: 3 },
-                      borderRadius: 2,
-                      fontSize: { xs: '0.9rem', sm: '1rem' },
-                      fontWeight: 600,
-                      textTransform: 'none',
-                      borderColor: 'rgba(255,255,255,0.5)',
-                      color: 'white',
-                      '&:hover': {
-                        borderColor: 'white',
-                        backgroundColor: 'rgba(255,255,255,0.1)',
-                      },
-                      transition: 'all 0.3s',
-                    }}>
-                    Family Connect
-                  </Button>
-                </Box>
-
-                <Box sx={{ mt: { xs: 3, sm: 4 } }}>
-                  <Typography
-                    variant='body2'
-                    sx={{
-                      color: 'rgba(255,255,255,0.7)',
-                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                    }}>
-                    Already have an account?{' '}
-                    <Button
-                      onClick={handlePatientLogin}
-                      sx={{
-                        color: mode === 'dark' ? '#FFB84D' : 'white',
-                        fontWeight: 'bold',
-                        textTransform: 'none',
-                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                        py: { xs: 0, sm: 1 },
-                        px: { xs: 0.5, sm: 1 },
-                        '&:hover': {
-                          background: 'transparent',
-                          textDecoration: 'underline',
-                        },
-                      }}>
-                      Patient Login
-                    </Button>{' '}
-                    or{' '}
-                    <Button
-                      onClick={handleFamilyLogin}
-                      sx={{
-                        color: mode === 'dark' ? '#FFB84D' : 'white',
-                        fontWeight: 'bold',
-                        textTransform: 'none',
-                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                        py: { xs: 0, sm: 1 },
-                        px: { xs: 0.5, sm: 1 },
-                        '&:hover': {
-                          background: 'transparent',
-                          textDecoration: 'underline',
-                        },
-                      }}>
-                      Family Login
-                    </Button>
+                    {loopTexts[loopTextIndex]}
                   </Typography>
-                </Box>
-              </div>
-            </Grid>
-          </Grid>
-        </Container>
+                </motion.div>
+              </AnimatePresence>
+            </Box>
+
+            <Stack
+              direction={{ xs: 'column', sm: 'column', md: 'row' }}
+              spacing={{ xs: 1, sm: 1.5 }}
+              justifyContent='center'
+              sx={{
+                mt: {
+                  xs: isExtraSmallMobile ? 1 : 1.5,
+                  sm: isSmallTablet ? 1.5 : 2,
+                },
+                px: isTablet ? 1 : 0,
+                position: 'relative',
+                zIndex: 2,
+              }}>
+              <Button
+                component={motion.button}
+                whileHover={{ scale: 1.05, y: -3 }}
+                whileTap={{ scale: 0.95 }}
+                variant='contained'
+                color='primary'
+                size={isMobile ? 'medium' : 'large'}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handlePatientLogin();
+                }}
+                sx={{
+                  borderRadius: 2,
+                  py: { xs: isExtraSmallMobile ? 0.8 : 1, sm: 1.5 },
+                  px: { xs: isExtraSmallMobile ? 1.5 : 2, sm: 3 },
+                  fontWeight: 600,
+                  textTransform: 'none',
+                  width: { xs: '100%', md: 'auto' },
+                  fontSize: {
+                    xs: isExtraSmallMobile ? '0.8rem' : '0.85rem',
+                    sm: '0.9rem',
+                    md: '1rem',
+                  },
+                  boxShadow:
+                    mode === 'dark'
+                      ? '0 4px 15px rgba(255, 138, 0, 0.2)'
+                      : '0 4px 15px rgba(255, 138, 0, 0.1)',
+                  '&:hover': {
+                    boxShadow:
+                      mode === 'dark'
+                        ? '0 8px 25px rgba(255, 138, 0, 0.3)'
+                        : '0 8px 25px rgba(255, 138, 0, 0.2)',
+                  },
+                }}>
+                Sign In
+              </Button>
+
+              <Button
+                component={motion.button}
+                whileHover={{ scale: 1.05, y: -3 }}
+                whileTap={{ scale: 0.95 }}
+                variant='outlined'
+                color='primary'
+                size={isMobile ? 'medium' : 'large'}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handlePatientRegister();
+                }}
+                sx={{
+                  borderRadius: 2,
+                  py: { xs: isExtraSmallMobile ? 0.8 : 1, sm: 1.5 },
+                  px: { xs: isExtraSmallMobile ? 1.5 : 2, sm: 3 },
+                  fontWeight: 600,
+                  textTransform: 'none',
+                  width: { xs: '100%', md: 'auto' },
+                  fontSize: {
+                    xs: isExtraSmallMobile ? '0.8rem' : '0.85rem',
+                    sm: '0.9rem',
+                    md: '1rem',
+                  },
+                  borderWidth: 2,
+                  '&:hover': {
+                    borderWidth: 2,
+                    bgcolor:
+                      mode === 'dark'
+                        ? 'rgba(255, 138, 0, 0.08)'
+                        : 'rgba(255, 138, 0, 0.04)',
+                  },
+                }}>
+                Join Now
+              </Button>
+            </Stack>
+          </Box>
+        </Box>
+
+        {/* Right Half - Family */}
+        <Box
+          ref={rightPanelRef}
+          component={motion.div}
+          initial={{ x: isMobile || isTablet ? 0 : 50, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ duration: 0.7 }}
+          onMouseEnter={cycleRightImage}
+          onMouseLeave={() => setRightHovered(false)}
+          onClick={handleFamilyLogin}
+          sx={{
+            flex: leftHovered ? 0.5 : rightHovered ? 1.7 : 1,
+            position: 'relative',
+            overflow: 'hidden',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            py: {
+              xs: 5,
+              sm: 4,
+              md: 3,
+              lg: 0,
+            },
+            px: {
+              xs: 2,
+              sm: 2,
+              md: 3,
+              lg: 4,
+            },
+            bgcolor: mode === 'dark' ? '#181818' : '#efefef',
+            transition: 'all 0.6s cubic-bezier(0.25, 0.8, 0.25, 1)',
+            cursor: 'pointer',
+            height: {
+              xs: isExtraSmallMobile ? '35vh' : '38vh',
+              sm: isSmallTablet ? '40vh' : '42vh',
+              md: '100%',
+            },
+            minHeight: {
+              xs: isExtraSmallMobile ? 200 : 220,
+              sm: isSmallTablet ? 250 : 300,
+              md: 450,
+              lg: 550,
+            },
+            transform: rightHovered
+              ? {
+                  xs: 'none',
+                  sm: isSmallTablet ? 'scale(1.01)' : 'scale(1.015)',
+                  md: 'scale(1.02)',
+                }
+              : 'none',
+            zIndex: rightHovered ? 10 : 1,
+            boxShadow: rightHovered
+              ? mode === 'dark'
+                ? '0 4px 20px rgba(0, 0, 0, 0.3)'
+                : '0 4px 20px rgba(0, 0, 0, 0.1)'
+              : 'none',
+            borderTop:
+              rightHovered && (isMobile || isTablet)
+                ? mode === 'dark'
+                  ? '2px solid rgba(255, 138, 0, 0.3)'
+                  : '2px solid rgba(255, 138, 0, 0.2)'
+                : 'none',
+            borderLeft:
+              rightHovered && !isMobile && !isTablet
+                ? mode === 'dark'
+                  ? '1px solid rgba(255, 138, 0, 0.2)'
+                  : '1px solid rgba(255, 138, 0, 0.1)'
+                : 'none',
+          }}>
+          {/* Background Image (cycles on hover) */}
+          <Box
+            component={motion.div}
+            animate={{
+              opacity: rightHovered ? 0.3 : 0,
+              scale: rightHovered ? 1.05 : 1,
+            }}
+            transition={{ duration: 0.7 }}
+            sx={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundImage: `url(${familyImages[rightImageIndex]})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              zIndex: 1,
+              filter: rightHovered ? 'blur(0px)' : 'blur(2px)',
+            }}
+          />
+
+          {/* Content */}
+          <Box
+            component={motion.div}
+            animate={{
+              y: rightHovered ? -15 : 0,
+              scale: rightHovered ? 1.05 : 1,
+            }}
+            transition={{ duration: 0.5, ease: 'easeOut' }}
+            sx={{
+              position: 'relative',
+              zIndex: 10,
+              p: { xs: 1.5, sm: 2, md: 3 },
+              maxWidth: { xs: '100%', sm: 350, md: rightHovered ? 500 : 450 },
+              width: '100%',
+              textAlign: 'center',
+            }}>
+            <motion.div
+              whileHover={{ rotate: -5, scale: 1.1 }}
+              transition={{ duration: 0.3 }}>
+              <FamilyRestroomIcon
+                sx={{
+                  fontSize: { xs: 60, sm: 70, md: 90 },
+                  color: theme.palette.secondary.main,
+                  mb: { xs: 1, sm: 2 },
+                }}
+              />
+            </motion.div>
+
+            <Typography
+              variant='h2'
+              sx={{
+                fontSize: {
+                  xs: isExtraSmallMobile ? '1.1rem' : '1.3rem',
+                  sm: isSmallTablet ? '1.4rem' : '1.6rem',
+                  md: '2rem',
+                  lg: '2.5rem',
+                  xl: '3rem',
+                },
+                fontWeight: 700,
+                mb: { xs: 1, sm: 1.5 },
+                color: mode === 'dark' ? 'white' : 'text.primary',
+                fontFamily: '"Playfair Display", serif',
+              }}>
+              Family
+            </Typography>
+
+            {/* Animated Text Loop for Family */}
+            <Box
+              sx={{
+                height: {
+                  xs: isExtraSmallMobile ? 40 : 45,
+                  sm: isSmallTablet ? 45 : 55,
+                  md: 60,
+                },
+                overflow: 'hidden',
+                position: 'relative',
+                mb: { xs: 1.5, sm: 2 },
+              }}>
+              <AnimatePresence mode='wait'>
+                <motion.div
+                  key={(loopTextIndex + 2) % loopTexts.length} // Offset to show different message
+                  initial={{ y: 40, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: -40, opacity: 0 }}
+                  transition={{ duration: 0.5 }}>
+                  <Typography
+                    variant='body1'
+                    sx={{
+                      textAlign: 'center',
+                      color:
+                        mode === 'dark'
+                          ? 'rgba(255,255,255,0.8)'
+                          : 'text.secondary',
+                      maxWidth: '90%',
+                      mx: 'auto',
+                      fontSize: {
+                        xs: isExtraSmallMobile ? '0.7rem' : '0.8rem',
+                        sm: isSmallTablet ? '0.8rem' : '0.9rem',
+                        md: '1rem',
+                      },
+                    }}>
+                    {loopTexts[(loopTextIndex + 2) % loopTexts.length]}
+                  </Typography>
+                </motion.div>
+              </AnimatePresence>
+            </Box>
+
+            <Stack
+              direction={{ xs: 'column', sm: 'column', md: 'row' }}
+              spacing={{ xs: 1, sm: 1.5 }}
+              justifyContent='center'
+              sx={{
+                mt: {
+                  xs: isExtraSmallMobile ? 1 : 1.5,
+                  sm: isSmallTablet ? 1.5 : 2,
+                },
+                px: isTablet ? 1 : 0,
+                position: 'relative',
+                zIndex: 2,
+              }}>
+              <Button
+                component={motion.button}
+                whileHover={{ scale: 1.05, y: -3 }}
+                whileTap={{ scale: 0.95 }}
+                variant='contained'
+                color='secondary'
+                size={isMobile ? 'medium' : 'large'}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleFamilyLogin();
+                }}
+                sx={{
+                  borderRadius: 2,
+                  py: { xs: isExtraSmallMobile ? 0.8 : 1, sm: 1.5 },
+                  px: { xs: isExtraSmallMobile ? 1.5 : 2, sm: 3 },
+                  fontWeight: 600,
+                  textTransform: 'none',
+                  width: { xs: '100%', md: 'auto' },
+                  fontSize: {
+                    xs: isExtraSmallMobile ? '0.8rem' : '0.85rem',
+                    sm: '0.9rem',
+                    md: '1rem',
+                  },
+                  bgcolor: mode === 'dark' ? '#ff9800' : undefined, // Brighter orange in dark mode
+                  color: mode === 'dark' ? '#000' : undefined, // Black text on orange for contrast
+                  boxShadow:
+                    mode === 'dark'
+                      ? '0 4px 15px rgba(255, 152, 0, 0.3)'
+                      : '0 4px 15px rgba(255, 138, 0, 0.1)',
+                  '&:hover': {
+                    bgcolor: mode === 'dark' ? '#ffb74d' : undefined,
+                    boxShadow:
+                      mode === 'dark'
+                        ? '0 8px 25px rgba(255, 152, 0, 0.4)'
+                        : '0 8px 25px rgba(255, 138, 0, 0.2)',
+                  },
+                }}>
+                Sign In
+              </Button>
+
+              <Button
+                component={motion.button}
+                whileHover={{ scale: 1.05, y: -3 }}
+                whileTap={{ scale: 0.95 }}
+                variant='outlined'
+                color='secondary'
+                size={isMobile ? 'medium' : 'large'}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleFamilyRegister();
+                }}
+                sx={{
+                  borderRadius: 2,
+                  py: { xs: isExtraSmallMobile ? 0.8 : 1, sm: 1.5 },
+                  px: { xs: isExtraSmallMobile ? 1.5 : 2, sm: 3 },
+                  fontWeight: 600,
+                  textTransform: 'none',
+                  width: { xs: '100%', md: 'auto' },
+                  fontSize: {
+                    xs: isExtraSmallMobile ? '0.8rem' : '0.85rem',
+                    sm: '0.9rem',
+                    md: '1rem',
+                  },
+                  borderColor: mode === 'dark' ? '#ff9800' : undefined,
+                  color: mode === 'dark' ? '#ff9800' : undefined,
+                  borderWidth: 2,
+                  '&:hover': {
+                    borderColor: mode === 'dark' ? '#ffb74d' : undefined,
+                    color: mode === 'dark' ? '#ffb74d' : undefined,
+                    bgcolor:
+                      mode === 'dark' ? 'rgba(255, 152, 0, 0.08)' : undefined,
+                    borderWidth: 2,
+                  },
+                }}>
+                Join Now
+              </Button>
+            </Stack>
+          </Box>
+        </Box>
       </Box>
 
       {/* Stats Section */}
       <Box
         sx={{
-          py: { xs: 3, sm: 4, md: 5 },
+          py: {
+            xs: 3,
+            sm: 4,
+            md: 5,
+            lg: 6,
+          },
           px: 0,
           borderBottom: `1px solid ${
             mode === 'dark'
@@ -515,16 +1118,33 @@ const LandingPage = () => {
           }`,
           background:
             mode === 'dark'
-              ? 'rgba(30, 30, 30, 0.8)'
+              ? 'rgba(30, 30, 30, 0.9)'
               : theme.palette.background.subtle,
           width: '100%',
+          maxWidth: '100%',
+          margin: 0,
+          boxSizing: 'border-box',
         }}>
         <Container
-          maxWidth='lg'
-          disableGutters={isMobile}
+          maxWidth={false}
+          disableGutters
           sx={{
-            px: { xs: 2, sm: 3 },
+            px: {
+              xs: 2,
+              sm: isSmallTablet ? 2 : 3,
+              md: 4,
+              lg: isDesktop ? 6 : 5,
+            },
             width: '100%',
+            margin: 0,
+            boxSizing: 'border-box',
+            maxWidth: {
+              lg: '1400px',
+              xl: isExtraLargeDesktop ? '1800px' : '1600px',
+            },
+            mx: {
+              lg: 'auto',
+            },
           }}>
           <Grid container spacing={{ xs: 2, sm: 3 }} justifyContent='center'>
             {statistics.map((stat, index) => (
@@ -577,7 +1197,13 @@ const LandingPage = () => {
       <Box
         id='ourApproach'
         sx={{
-          py: { xs: 6, sm: 8, md: 12 },
+          py: {
+            xs: 5,
+            sm: 6,
+            md: 8,
+            lg: 10,
+            xl: isExtraLargeDesktop ? 12 : 10,
+          },
           px: 0,
           bgcolor: mode === 'dark' ? '#111111' : 'background.default',
           borderBottom: `1px solid ${
@@ -586,13 +1212,47 @@ const LandingPage = () => {
               : 'rgba(255, 138, 0, 0.12)'
           }`,
           width: '100%',
+          maxWidth: '100%',
+          margin: 0,
+          boxSizing: 'border-box',
+          position: 'relative',
+          '&::after': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '60%',
+            background:
+              mode === 'dark'
+                ? 'radial-gradient(circle at 30% 20%, rgba(255, 138, 0, 0.05) 0%, transparent 70%)'
+                : 'radial-gradient(circle at 30% 20%, rgba(255, 138, 0, 0.04) 0%, transparent 70%)',
+            pointerEvents: 'none',
+            zIndex: 0,
+          },
         }}>
         <Container
-          maxWidth='lg'
-          disableGutters={isMobile}
+          maxWidth={false}
+          disableGutters
           sx={{
-            px: { xs: 2, sm: 3 },
+            px: {
+              xs: 2,
+              sm: isSmallTablet ? 2 : 3,
+              md: 4,
+              lg: isDesktop ? 6 : 5,
+              xl: isExtraLargeDesktop ? 8 : 6,
+            },
             width: '100%',
+            margin: 0,
+            boxSizing: 'border-box',
+            maxWidth: isExtraLargeDesktop
+              ? '1800px'
+              : isDesktop
+              ? '1600px'
+              : isLargeTablet
+              ? '1200px'
+              : '1000px',
+            mx: isLargeTablet || isLaptop || isDesktop ? 'auto' : 0,
           }}>
           <Grid container justifyContent='center'>
             {/* Text content */}
@@ -632,7 +1292,13 @@ const LandingPage = () => {
                     component='h2'
                     sx={{
                       mb: 4,
-                      fontSize: { xs: '1.75rem', sm: '2.25rem', md: '3.2rem' },
+                      fontSize: {
+                        xs: isExtraSmallMobile ? '1.3rem' : '1.5rem',
+                        sm: isSmallTablet ? '1.7rem' : '2rem',
+                        md: '2.8rem',
+                        lg: '3.2rem',
+                        xl: isExtraLargeDesktop ? '3.8rem' : '3.5rem',
+                      },
                       fontWeight: 800,
                       lineHeight: 1.2,
                       color:
@@ -643,6 +1309,10 @@ const LandingPage = () => {
                           : `linear-gradient(90deg, ${theme.palette.primary.main} 30%, ${theme.palette.secondary.main} 100%)`,
                       WebkitBackgroundClip: 'text',
                       WebkitTextFillColor: 'transparent',
+                      textShadow:
+                        mode === 'dark'
+                          ? '0 2px 15px rgba(255, 184, 77, 0.2)'
+                          : 'none',
                     }}>
                     Welcome to the end
                     <br />
@@ -805,20 +1475,41 @@ const LandingPage = () => {
       <Box
         id='features'
         sx={{
-          py: { xs: 3, sm: 6, md: 6 },
+          py: {
+            xs: 3,
+            sm: 4,
+            md: 5,
+            lg: 6,
+          },
           px: 0,
           bgcolor:
             mode === 'dark'
               ? 'rgba(18, 18, 18, 0.8)'
               : theme.palette.background.subtle,
           width: '100%',
+          maxWidth: '100%',
+          margin: 0,
+          boxSizing: 'border-box',
         }}>
         <Container
-          maxWidth='lg'
-          disableGutters={isMobile}
+          maxWidth={false}
+          disableGutters
           sx={{
-            px: { xs: 2, sm: 3 },
+            px: {
+              xs: 2,
+              sm: isSmallTablet ? 2 : 3,
+              md: 4,
+              lg: isDesktop ? 6 : 5,
+            },
             width: '100%',
+            margin: 0,
+            boxSizing: 'border-box',
+            maxWidth: isDesktop
+              ? '1600px'
+              : isLargeTablet
+              ? '1200px'
+              : '1000px',
+            mx: isLargeTablet || isLaptop || isDesktop ? 'auto' : 0,
           }}>
           <Grid container spacing={3} direction='column' alignItems='center'>
             <Grid item xs={12}>
@@ -829,7 +1520,6 @@ const LandingPage = () => {
                 transition={{ duration: 0.6 }}>
                 <Box
                   sx={{
-                    
                     textAlign: 'center',
                     maxWidth: '700px',
                     mx: 'auto',
@@ -855,7 +1545,11 @@ const LandingPage = () => {
                       mt: 1,
                       mb: 3,
                       fontWeight: 700,
-                      fontSize: { xs: '1.75rem', sm: '2.5rem', md: '3.2rem' },
+                      fontSize: {
+                        xs: '1.5rem',
+                        sm: isSmallTablet ? '1.7rem' : '2rem',
+                        md: '2.8rem',
+                      },
                       background:
                         mode === 'dark'
                           ? 'linear-gradient(90deg, #FFB84D 30%, #FFC876 100%)'
@@ -970,204 +1664,54 @@ const LandingPage = () => {
       {/* Testimonial Section */}
       <Box
         sx={{
-          py: { xs: 3, sm: 6, md: 6 },
+          py: {
+            xs: 3,
+            sm: 4,
+            md: 5,
+            lg: 6,
+          },
           px: 0,
           bgcolor: mode === 'dark' ? '#111111' : 'background.default',
           width: '100%',
+          maxWidth: '100%',
+          margin: 0,
+          boxSizing: 'border-box',
+          position: 'relative',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '20%',
+            background:
+              mode === 'dark'
+                ? 'linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, transparent 100%)'
+                : 'linear-gradient(to bottom, rgba(0,0,0,0.03) 0%, transparent 100%)',
+            zIndex: 0,
+          },
         }}>
         <Container
-          maxWidth='lg'
-          disableGutters={isMobile}
+          maxWidth={false}
+          disableGutters
           sx={{
-            px: { xs: 2, sm: 3 },
+            px: {
+              xs: 2,
+              sm: isSmallTablet ? 2 : 3,
+              md: 4,
+              lg: isDesktop ? 6 : 5,
+            },
             width: '100%',
-          }}>
-          <Grid container spacing={3} justifyContent='center'>
-            <Grid
-              item
-              xs={12}
-              sx={{ textAlign: 'center', mb: { xs: 3, sm: 4 } }}>
-              <div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6 }}>
-                <Typography
-                  variant='overline'
-                  sx={{
-                    color:
-                      mode === 'dark' ? '#FFB84D' : theme.palette.primary.main,
-                    letterSpacing: 2,
-                    fontWeight: 600,
-                    fontSize: { xs: '0.7rem', sm: '0.9rem' },
-                  }}>
-                  TESTIMONIALS
-                </Typography>
-                <Typography
-                  variant='h3'
-                  component='h2'
-                  sx={{
-                    mt: 1,
-                    mb: 2,
-                    fontWeight: 700,
-                    fontSize: { xs: '1.75rem', sm: '2.5rem', md: '3.2rem' },
-                    background:
-                      mode === 'dark'
-                        ? 'linear-gradient(90deg, #FFB84D 30%, #FFC876 100%)'
-                        : `linear-gradient(90deg, ${theme.palette.primary.main} 30%, ${theme.palette.secondary.main} 100%)`,
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                  }}>
-                  What Our Users Say
-                </Typography>
-              </div>
-            </Grid>
-
-            <Grid
-              container
-              spacing={{ xs: 2, sm: 3, md: 4 }}
-              justifyContent='center'>
-              {testimonials.map((testimonial, index) => (
-                <Grid item xs={12} md={6} key={index} sx={{ display: 'flex' }}>
-                  <div
-                    initial={{ opacity: 0, y: 40 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.6, delay: index * 0.2 }}
-                    style={{ width: '100%', height: '100%' }}>
-                    <Paper
-                      elevation={2}
-                      sx={{
-                        p: { xs: 3, sm: 4 },
-                        borderRadius: 3,
-                        height: '100%',
-                        width: '100%',
-                        position: 'relative',
-                        overflow: 'hidden',
-                        boxShadow: '0 4px 12px rgba(255, 138, 0, 0.08)',
-                        background:
-                          mode === 'dark'
-                            ? 'linear-gradient(135deg, rgba(177, 85, 0, 0.4) 0%, rgba(139, 69, 19, 0.6) 100%)'
-                            : 'linear-gradient(135deg, rgba(255, 138, 0, 0.02) 0%, rgba(255, 255, 255, 1) 100%)',
-                        border:
-                          mode === 'dark'
-                            ? `1px solid rgba(255, 178, 0, 0.2)`
-                            : `1px solid rgba(255, 138, 0, 0.05)`,
-                        '&:hover': {
-                          boxShadow:
-                            mode === 'dark'
-                              ? '0 8px 20px rgba(255, 178, 0, 0.15)'
-                              : '0 8px 20px rgba(255, 138, 0, 0.12)',
-                          transform: {
-                            xs: 'translateY(-3px)',
-                            sm: 'translateY(-5px)',
-                          },
-                        },
-                        transition: 'all 0.3s ease',
-                        display: 'flex',
-                        flexDirection: 'column',
-                      }}>
-                      <Box
-                        sx={{
-                          color:
-                            mode === 'dark'
-                              ? 'rgba(255, 178, 0, 0.1)'
-                              : 'rgba(255, 138, 0, 0.07)',
-                          position: 'absolute',
-                          top: -10,
-                          left: -10,
-                          transform: 'rotate(180deg)',
-                          display: { xs: 'none', sm: 'block' },
-                        }}>
-                        <FormatQuoteIcon
-                          sx={{ fontSize: { sm: 80, md: 120 } }}
-                        />
-                      </Box>
-                      <Box
-                        sx={{
-                          position: 'relative',
-                          zIndex: 1,
-                          textAlign: 'center',
-                        }}>
-                        <Typography
-                          variant='body1'
-                          sx={{
-                            mb: 3,
-                            fontSize: { xs: '0.9rem', sm: '1.1rem' },
-                            lineHeight: 1.7,
-                            fontStyle: 'italic',
-                            textAlign: 'center',
-                            color:
-                              mode === 'dark'
-                                ? 'rgba(255,255,255,0.9)'
-                                : 'inherit',
-                          }}>
-                          "{testimonial.quote}"
-                        </Typography>
-                        <Divider
-                          sx={{
-                            mb: 2,
-                            borderColor:
-                              mode === 'dark'
-                                ? 'rgba(255, 178, 0, 0.3)'
-                                : 'rgba(255, 138, 0, 0.12)',
-                            width: '50%',
-                            mx: 'auto',
-                          }}
-                        />
-                        <Typography
-                          variant='subtitle1'
-                          sx={{
-                            fontWeight: 600,
-                            textAlign: 'center',
-                            fontSize: { xs: '0.9rem', sm: '1rem' },
-                            color: mode === 'dark' ? 'white' : 'inherit',
-                          }}>
-                          {testimonial.author}
-                        </Typography>
-                        <Typography
-                          variant='body2'
-                          color={
-                            mode === 'dark'
-                              ? 'rgba(255,255,255,0.7)'
-                              : 'text.secondary'
-                          }
-                          sx={{
-                            textAlign: 'center',
-                            fontSize: { xs: '0.8rem', sm: '0.875rem' },
-                          }}>
-                          {testimonial.role}
-                        </Typography>
-                      </Box>
-                    </Paper>
-                  </div>
-                </Grid>
-              ))}
-            </Grid>
-          </Grid>
-        </Container>
-      </Box>
-
-      {/* Call To Action */}
-      <Box
-        id='howWeWork'
-        sx={{
-          py: { xs: 6, sm: 8, md: 12 },
-          px: 0,
-          background:
-            mode === 'dark'
-              ? 'linear-gradient(90deg, #8B4513 0%, #B15500 100%)'
-              : `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 50%, ${theme.palette.secondary.main} 100%)`,
-          color: 'white',
-          textAlign: 'center',
-          width: '100%',
-        }}>
-        <Container
-          maxWidth='md'
-          disableGutters={isMobile}
-          sx={{
-            px: { xs: 2, sm: 3 },
-            width: '100%',
+            margin: 0,
+            boxSizing: 'border-box',
+            maxWidth: isDesktop
+              ? '1600px'
+              : isLargeTablet
+              ? '1200px'
+              : '1000px',
+            mx: isLargeTablet || isLaptop || isDesktop ? 'auto' : 0,
+            position: 'relative',
+            zIndex: 1,
           }}>
           <div>
             <Typography
@@ -1176,7 +1720,7 @@ const LandingPage = () => {
               sx={{
                 mb: 3,
                 fontWeight: 700,
-                fontSize: { xs: '1.75rem', sm: '2.25rem', md: '3rem' },
+                fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' },
               }}>
               Ready to preserve your memories?
             </Typography>
@@ -1243,7 +1787,7 @@ const LandingPage = () => {
                   transition: 'all 0.3s',
                   width: { xs: '100%', sm: 'auto' },
                 }}>
-                Get Started Now
+                Get Started
               </Button>
               <Button
                 variant='outlined'
@@ -1253,15 +1797,24 @@ const LandingPage = () => {
                   py: { xs: 1.5, sm: 2 },
                   px: { xs: 3, sm: 5 },
                   borderRadius: 2,
+                  border: 'none',
                   fontSize: { xs: '0.9rem', sm: '1.1rem' },
                   fontWeight: 600,
                   textTransform: 'none',
-                  borderColor: 'rgba(255,255,255,0.5)',
-                  color: 'white',
+                  boxShadow:
+                    mode === 'dark'
+                      ? '0 4px 15px rgba(255, 255, 255, 0.35)'
+                      : '0 4px 15px rgba(255, 189, 0, 0.3)',
+                  bgcolor: 'white',
+                  color:
+                    mode === 'dark' ? '#B15500' : theme.palette.secondary.main,
                   '&:hover': {
-                    borderColor: 'white',
-                    backgroundColor: 'rgba(255,255,255,0.1)',
+                    boxShadow:
+                      mode === 'dark'
+                        ? '0 8px 25px rgba(255, 255, 255, 0.45)'
+                        : '0 8px 25px rgba(255, 189, 0, 0.4)',
                     transform: 'translateY(-3px)',
+                    bgcolor: 'rgba(255,255,255,0.9)',
                   },
                   transition: 'all 0.3s',
                   width: { xs: '100%', sm: 'auto' },

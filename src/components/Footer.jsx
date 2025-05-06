@@ -1,9 +1,12 @@
-import { Box, Container, Typography, Link } from '@mui/material';
+import { Box, Container, Typography, Link, useTheme } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { useTheme as useCustomTheme } from '../contexts/ThemeContext';
 
 const Footer = () => {
   const navigate = useNavigate();
   const currentYear = new Date().getFullYear();
+  const theme = useTheme();
+  const { mode } = useCustomTheme();
 
   return (
     <Box
@@ -12,8 +15,12 @@ const Footer = () => {
         py: 3,
         px: 2,
         mt: 'auto',
-        backgroundColor: (theme) => theme.palette.primary.main,
+        backgroundColor:
+          mode === 'dark'
+            ? '#121212' // Much darker in dark mode
+            : theme.palette.primary.main,
         color: 'white',
+        alignItems: 'center'
       }}>
       <Container maxWidth='lg'>
         <Box

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { supabase } from './server.js';
+import { supabase } from '../backend/server';
 import { useNavigate, Link } from 'react-router-dom';
 import {
   Box,
@@ -141,7 +141,7 @@ const PatientLogin = () => {
       }}>
       {/* Chatbot */}
       <Chatbot />
-      
+
       <Container maxWidth='sm'>
         <motion.div
           initial={{ opacity: 0, y: 20 }}

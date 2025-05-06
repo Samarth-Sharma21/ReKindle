@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from './server';
+import { supabase } from '../backend/server';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useMemory } from '../contexts/MemoryContext';

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { supabase } from '../pages/server';
+import { supabase } from '../backend/server';
 import { useAuth } from './AuthContext';
 
 const MemoryContext = createContext(null);

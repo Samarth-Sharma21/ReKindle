@@ -37,6 +37,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { supabase, locationService } from '../backend/server';
 
 const SavedLocations = () => {
   const navigate = useNavigate();
@@ -45,10 +46,48 @@ const SavedLocations = () => {
   const isDarkMode = theme.palette.mode === 'dark';
 
   // State for saved locations
-  const [locations, setLocations] = useState(() => {
-    const savedLocations = localStorage.getItem('savedLocations');
-    return savedLocations ? JSON.parse(savedLocations) : [];
-  });
+  const [locations, setLocations] = useState([]);
+
+  // Fetch locations from database on component mount
+  useEffect(() => {
+    const fetchLocations = async () => {
+      try {
+        // Get the current user's ID
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser();
+
+        if (userError || !user) {
+          // Fallback to localStorage if not authenticated
+          const savedLocations = localStorage.getItem('savedLocations');
+          setLocations(savedLocations ? JSON.parse(savedLocations) : []);
+          return;
+        }
+
+        const { data, error } = await locationService.getLocations(user.id);
+
+        if (error) {
+          throw error;
+        }
+
+        if (data) {
+          setLocations(data);
+        } else {
+          // Fallback to localStorage if no data
+          const savedLocations = localStorage.getItem('savedLocations');
+          setLocations(savedLocations ? JSON.parse(savedLocations) : []);
+        }
+      } catch (error) {
+        console.error('Error fetching locations:', error.message);
+        // Fallback to localStorage on error
+        const savedLocations = localStorage.getItem('savedLocations');
+        setLocations(savedLocations ? JSON.parse(savedLocations) : []);
+      }
+    };
+
+    fetchLocations();
+  }, []);
 
   // State for location form
   const [newLocation, setNewLocation] = useState({
@@ -67,7 +106,7 @@ const SavedLocations = () => {
     severity: 'success',
   });
 
-  // Save locations to localStorage whenever they change
+  // Save locations to localStorage as backup whenever they change
   useEffect(() => {
     localStorage.setItem('savedLocations', JSON.stringify(locations));
   }, [locations]);
@@ -94,7 +133,7 @@ const SavedLocations = () => {
     setNewLocation({ ...newLocation, [name]: value });
   };
 
-  const handleSaveLocation = () => {
+  const handleSaveLocation = async () => {
     // Validate inputs
     if (!newLocation.name || !newLocation.address) {
       setNotification({
@@ -105,37 +144,118 @@ const SavedLocations = () => {
       return;
     }
 
-    if (editIndex !== null) {
-      // Update existing location
-      const updatedLocations = [...locations];
-      updatedLocations[editIndex] = newLocation;
-      setLocations(updatedLocations);
+    try {
+      // Get the current user's ID
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError || !user) {
+        throw new Error('User not authenticated');
+      }
+
+      if (editIndex !== null) {
+        // Update existing location in database
+        const locationToUpdate = locations[editIndex];
+        const locationId = locationToUpdate.id;
+
+        if (locationId) {
+          // If the location has an ID, update it in the database
+          await locationService.updateLocation(newLocation, locationId);
+        }
+
+        // Update in local state
+        const updatedLocations = [...locations];
+        updatedLocations[editIndex] = newLocation;
+        setLocations(updatedLocations);
+
+        setNotification({
+          open: true,
+          message: 'Location updated successfully',
+          severity: 'success',
+        });
+      } else {
+        // Add new location to database
+        const { data, error } = await locationService.saveLocation(
+          newLocation,
+          user.id
+        );
+
+        if (error) throw error;
+
+        // Add to local state (use the returned data if available, otherwise use the input)
+        const newLocationWithId = data?.[0] || {
+          ...newLocation,
+          id: Date.now().toString(),
+        };
+        setLocations([...locations, newLocationWithId]);
+
+        setNotification({
+          open: true,
+          message: 'Location saved successfully',
+          severity: 'success',
+        });
+      }
+    } catch (error) {
+      console.error('Error saving location:', error.message);
+
+      // Fallback to local storage only
+      if (editIndex !== null) {
+        // Update existing location
+        const updatedLocations = [...locations];
+        updatedLocations[editIndex] = newLocation;
+        setLocations(updatedLocations);
+      } else {
+        // Add new location
+        setLocations([
+          ...locations,
+          { ...newLocation, id: Date.now().toString() },
+        ]);
+      }
+
       setNotification({
         open: true,
-        message: 'Location updated successfully',
-        severity: 'success',
-      });
-    } else {
-      // Add new location
-      setLocations([...locations, newLocation]);
-      setNotification({
-        open: true,
-        message: 'Location saved successfully',
-        severity: 'success',
+        message: 'Location saved locally (offline mode)',
+        severity: 'info',
       });
     }
 
     handleCloseDialog();
   };
 
-  const handleDeleteLocation = (index) => {
-    const updatedLocations = locations.filter((_, i) => i !== index);
-    setLocations(updatedLocations);
-    setNotification({
-      open: true,
-      message: 'Location deleted',
-      severity: 'info',
-    });
+  const handleDeleteLocation = async (index) => {
+    try {
+      const locationToDelete = locations[index];
+      const locationId = locationToDelete.id;
+
+      if (locationId) {
+        // If the location has an ID, delete it from the database
+        await locationService.deleteLocation(locationId);
+      }
+
+      // Update local state
+      const updatedLocations = locations.filter((_, i) => i !== index);
+      setLocations(updatedLocations);
+
+      setNotification({
+        open: true,
+        message: 'Location deleted',
+        severity: 'info',
+      });
+    } catch (error) {
+      console.error('Error deleting location:', error.message);
+
+      // Still update local state even if database operation fails
+      const updatedLocations = locations.filter((_, i) => i !== index);
+      setLocations(updatedLocations);
+
+      setNotification({
+        open: true,
+        message: 'Location deleted locally',
+        severity: 'info',
+      });
+    }
   };
 
   const handleNavigate = (address) => {

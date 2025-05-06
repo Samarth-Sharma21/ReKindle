@@ -167,7 +167,10 @@ const PatientDashboard = () => {
                       theme.palette.primary.dark,
                       0.8
                     )} 0%, ${alpha(theme.palette.primary.main, 0.6)} 100%)`
-                  : `linear-gradient(90deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+                  : `linear-gradient(10deg, ${alpha(
+                      theme.palette.primary.light,
+                      0.95
+                    )} 0%, ${theme.palette.primary.main} 100%)`,
                 color: '#fff',
                 overflow: 'hidden',
                 position: 'relative',

@@ -148,4 +148,88 @@ const emergencyContactService = {
   },
 };
 
-export { supabase, locationService, emergencyContactService };
+// Helper functions for task/notes management
+const taskService = {
+  // Save a task to the database
+  saveTask: async (task, userId) => {
+    try {
+      const { data, error } = await supabase
+        .from('tasks')
+        .insert([{ ...task, user_id: userId }]);
+
+      if (error) throw error;
+      return { data, error: null };
+    } catch (error) {
+      console.error('Error saving task:', error);
+      return { data: null, error };
+    }
+  },
+
+  // Get all tasks for a user
+  getTasks: async (userId) => {
+    try {
+      const { data, error } = await supabase
+        .from('tasks')
+        .select('*')
+        .eq('user_id', userId)
+        .order('due_date', { ascending: true });
+
+      if (error) throw error;
+      return { data, error: null };
+    } catch (error) {
+      console.error('Error fetching tasks:', error);
+      return { data: null, error };
+    }
+  },
+
+  // Update a task
+  updateTask: async (task, taskId) => {
+    try {
+      const { data, error } = await supabase
+        .from('tasks')
+        .update(task)
+        .eq('id', taskId);
+
+      if (error) throw error;
+      return { data, error: null };
+    } catch (error) {
+      console.error('Error updating task:', error);
+      return { data: null, error };
+    }
+  },
+
+  // Delete a task
+  deleteTask: async (taskId) => {
+    try {
+      const { data, error } = await supabase
+        .from('tasks')
+        .delete()
+        .eq('id', taskId);
+
+      if (error) throw error;
+      return { data, error: null };
+    } catch (error) {
+      console.error('Error deleting task:', error);
+      return { data: null, error };
+    }
+  },
+
+  // Get tasks for a specific date
+  getTasksByDate: async (userId, date) => {
+    try {
+      const { data, error } = await supabase
+        .from('tasks')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('due_date', date);
+
+      if (error) throw error;
+      return { data, error: null };
+    } catch (error) {
+      console.error('Error fetching tasks by date:', error);
+      return { data: null, error };
+    }
+  },
+};
+
+export { supabase, locationService, emergencyContactService, taskService };

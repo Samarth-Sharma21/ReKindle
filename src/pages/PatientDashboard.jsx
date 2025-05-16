@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from './server';
+import { supabase } from '../backend/server';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -24,9 +24,20 @@ import TimelineIcon from '@mui/icons-material/Timeline';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import PeopleIcon from '@mui/icons-material/People';
 import TextSnippetIcon from '@mui/icons-material/TextSnippet';
-import { BreathingExercise, MemoryCarousel } from '../components';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import AddIcon from '@mui/icons-material/Add';
+import {
+  BreathingExercise,
+  MemoryCarousel,
+  DashboardBentoGrid,
+  CalendarAndTasks,
+  FamilyManagementCard,
+  NotificationsCard,
+} from '../components';
 import { Link } from 'react-router-dom';
 import CalendarTodayOutlinedIcon from '@mui/icons-material/CalendarTodayOutlined';
+import SavedLocationsCard from '../components/SavedLocationsCard';
+import UpcomingTasksCard from '../components/UpcomingTasksCard';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import FamilyRestroomIcon from '@mui/icons-material/FamilyRestroom';
 import { useAuth } from '../contexts/AuthContext';
@@ -54,7 +65,6 @@ const PatientDashboard = () => {
 
   // Create a combined userData object with defaults and auth data
   const [memories, setMemories] = useState([]);
-  const [recentLocations, setRecentLocations] = useState([]);
 
   useEffect(() => {
     const fetchMemories = async () => {
@@ -77,19 +87,6 @@ const PatientDashboard = () => {
         if (error) throw error;
 
         setMemories(data || []);
-
-        // Get unique locations, keeping only the most recent occurrence of each
-        const uniqueLocations = data
-          .filter((memory) => memory.location && memory.location.trim() !== '')
-          .reduce((acc, memory) => {
-            if (!acc.includes(memory.location)) {
-              acc.push(memory.location);
-            }
-            return acc;
-          }, [])
-          .slice(0, 3); // Take only the first 3 unique locations
-
-        setRecentLocations(uniqueLocations);
       } catch (error) {
         console.error('Error fetching memories:', error.message);
       }
@@ -146,21 +143,21 @@ const PatientDashboard = () => {
         maxWidth='lg'
         disableGutters={isMobile}
         sx={{
-          mt: { xs: 2, sm: 3 },
-          mb: { xs: 4, sm: 6 },
-          px: { xs: 2, sm: 3, md: 4 },
+          mt: { xs: 1.5, sm: 2, md: 3 },
+          mb: { xs: 3, sm: 4, md: 5 },
+          px: { xs: 1, sm: 2, md: 3 },
           boxSizing: 'border-box',
           width: '100%',
           overflowX: 'hidden',
         }}>
-        <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
+        <Grid container spacing={{ xs: 1.5, sm: 2, md: 4 }}>
           {/* Greeting Card */}
           <Grid xs={12}>
             <Paper
               elevation={2}
               sx={{
-                p: { xs: 2, sm: 3, md: 4 },
-                mb: { xs: 3, sm: 4, md: 5 },
+                p: { xs: 2, sm: 2.5, md: 3 },
+                mb: { xs: 2, sm: 3, md: 3 },
                 borderRadius: 3,
                 background: isDarkMode
                   ? `linear-gradient(90deg, ${alpha(
@@ -175,11 +172,12 @@ const PatientDashboard = () => {
                 overflow: 'hidden',
                 position: 'relative',
                 boxShadow: isDarkMode
-                  ? '0 10px 30px rgba(0, 0, 0, 0.3)'
-                  : '0 10px 30px rgba(0, 0, 0, 0.15)',
+                  ? '0 8px 20px rgba(0, 0, 0, 0.3)'
+                  : '0 8px 20px rgba(0, 0, 0, 0.15)',
                 width: '100%',
                 maxWidth: '100%',
                 boxSizing: 'border-box',
+                height: 'auto',
               }}>
               <Box
                 sx={{
@@ -222,7 +220,7 @@ const PatientDashboard = () => {
                       display: 'flex',
                       alignItems: { xs: 'flex-start', sm: 'center' },
                       flexDirection: { xs: 'column', sm: 'row' },
-                      fontSize: { xs: '1.5rem', sm: '1.8rem', md: '2.125rem' },
+                      fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' },
                     }}>
                     {greeting}{' '}
                     <Box
@@ -240,7 +238,7 @@ const PatientDashboard = () => {
                     sx={{
                       mb: 2,
                       opacity: 0.9,
-                      fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
+                      fontSize: { xs: '0.85rem', sm: '0.95rem', md: '1rem' },
                     }}>
                     Welcome to your memory dashboard. Ready to capture some new
                     memories today?
@@ -311,7 +309,7 @@ const PatientDashboard = () => {
           <Grid xs={12}>
             <Box
               sx={{
-                mb: { xs: 3, sm: 4, md: 5 },
+                mb: { xs: 2, sm: 3, md: 4 },
                 width: '100%',
                 display: 'flex',
                 flexDirection: 'column',
@@ -345,14 +343,14 @@ const PatientDashboard = () => {
                     ? '0 10px 30px rgba(0, 0, 0, 0.3)'
                     : '0 10px 30px rgba(0, 0, 0, 0.15)',
                   // Fixed widths for different screen sizes
-                  width: {
+                  width: '100%',
+                  maxWidth: {
                     xs: '100%',
                     sm: '600px',
                     md: '800px',
                     lg: '900px',
                   },
-                  height: { xs: 300, sm: 380, md: 450, lg: 500 },
-                  maxWidth: '100%',
+                  height: { xs: 200, sm: 280, md: 350, lg: 400 },
                   boxSizing: 'border-box',
                 }}>
                 <Box
@@ -423,281 +421,202 @@ const PatientDashboard = () => {
 
           {/* Three action cards - stacked on mobile, side by side on larger screens */}
           <Grid container spacing={{ xs: 2, sm: 3 }}>
-            {/* Recent Locations */}
-            <Grid item xs={12} sm={4} sx={{ display: 'flex' }}>
-              <Paper
-                elevation={2}
-                sx={{
-                  p: { xs: 2, sm: 3 },
-                  borderRadius: 3,
-                  height: '100%',
-                  width: '100%',
-                  bgcolor: (theme) => theme.palette.background.paper,
-                  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                  '&:hover': {
-                    transform: 'translateY(-5px)',
-                    boxShadow: isDarkMode
-                      ? '0 12px 20px rgba(0, 0, 0, 0.3)'
-                      : '0 12px 20px rgba(0, 0, 0, 0.1)',
-                  },
-                }}>
+            {/* Dashboard Cards Row - equal height for all cards */}
+            <Grid container item spacing={2} xs={12}>
+              {/* Saved Locations Card */}
+              <Grid item xs={12} sm={6} md={4}>
                 <Box
                   sx={{
+                    height: { xs: '350px', sm: '350px', md: '350px' },
+                    width: '100%',
                     display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    mb: 2,
                   }}>
-                  <Typography
-                    variant='h6'
-                    sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
-                    Recent Locations
-                  </Typography>
-                  <IconButton
-                    color='primary'
-                    size='small'
-                    sx={{
-                      bgcolor: (theme) =>
-                        alpha(theme.palette.primary.main, 0.1),
-                    }}>
-                    <LocationOnIcon />
-                  </IconButton>
+                  <SavedLocationsCard />
                 </Box>
-                <Divider sx={{ mb: 3 }} />
-                {recentLocations.length > 0 ? (
-                  <Stack spacing={2}>
-                    {recentLocations.map((location, index) => (
-                      <Box
-                        key={index}
-                        sx={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 1,
-                          p: 1,
-                          borderRadius: 1,
-                          '&:hover': {
-                            bgcolor: (theme) =>
-                              alpha(theme.palette.primary.main, 0.1),
-                          },
-                        }}>
-                        <LocationOnIcon color='primary' sx={{ fontSize: 20 }} />
-                        <Typography
-                          variant='body1'
-                          sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }}>
-                          {location}
-                        </Typography>
-                      </Box>
-                    ))}
-                  </Stack>
-                ) : (
-                  <Typography variant='body2' color='text.secondary'>
-                    No recent locations found
-                  </Typography>
-                )}
-              </Paper>
+              </Grid>
+
+              {/* Tasks Card */}
+              <Grid item xs={12} sm={6} md={4}>
+                <Box
+                  sx={{
+                    height: { xs: '350px', sm: '350px', md: '350px' },
+                    width: '100%',
+                    display: 'flex',
+                  }}>
+                  <UpcomingTasksCard isWidget={true} />
+                </Box>
+              </Grid>
+
+              {/* Family Management Card */}
+              <Grid item xs={12} sm={6} md={4}>
+                <Box
+                  sx={{
+                    height: { xs: '350px', sm: '350px', md: '350px' },
+                    width: '100%',
+                    display: 'flex',
+                  }}>
+                  <FamilyManagementCard onSettingsClick={() => {}} />
+                </Box>
+              </Grid>
             </Grid>
 
-            {/* Family Members */}
-            <Grid item xs={12} sm={4} sx={{ display: 'flex' }}>
+            {/* Calendar and Tasks */}
+            <Grid item xs={12} md={12} lg={10}>
               <Paper
                 elevation={2}
                 sx={{
-                  p: { xs: 2, sm: 3 },
-                  borderRadius: 3,
+                  borderRadius: 2,
+                  overflow: 'hidden',
                   height: '100%',
+                  minHeight: '400px',
                   width: '100%',
-                  bgcolor: (theme) => theme.palette.background.paper,
-                  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                  '&:hover': {
-                    transform: 'translateY(-5px)',
-                    boxShadow: isDarkMode
-                      ? '0 12px 20px rgba(0, 0, 0, 0.3)'
-                      : '0 12px 20px rgba(0, 0, 0, 0.1)',
-                  },
                 }}>
+                <CalendarAndTasks activeTab={0} showCalendar={true} />
                 <Box
                   sx={{
                     display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    mb: 2,
+                    justifyContent: 'center',
+                    p: 2,
+                    borderTop: 1,
+                    borderColor: 'divider',
                   }}>
-                  <Typography
-                    variant='h6'
-                    sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
-                    Family Members
-                  </Typography>
-                  <IconButton
+                  <Button
+                    variant='outlined'
                     color='primary'
                     size='small'
+                    endIcon={<ArrowForwardIcon />}
+                    component={Link}
+                    to='/calendar'
                     sx={{
-                      bgcolor: (theme) =>
-                        alpha(theme.palette.primary.main, 0.1),
+                      borderRadius: 1,
+                      py: 0.75,
+                      '&:hover': {
+                        color: 'primary.main',
+                        borderColor: 'primary.main',
+                        bgcolor: alpha(theme.palette.primary.main, 0.05),
+                      },
                     }}>
-                    <PeopleIcon />
-                  </IconButton>
-                </Box>
-                <Divider sx={{ mb: 3 }} />
-                <Stack spacing={2}>
-                  {userData?.familyMembers.length > 0 ? (
-                    userData.familyMembers.map((member) => (
-                      <Card
-                        key={member.name}
-                        variant='outlined'
-                        sx={{
-                          borderRadius: 2,
-                          boxShadow: 'none',
-                          bgcolor: (theme) => theme.palette.background.paper,
-                          transition: 'all 0.3s ease',
-                          '&:hover': {
-                            borderColor: 'primary.main',
-                            bgcolor: (theme) =>
-                              alpha(theme.palette.primary.main, 0.05),
-                          },
-                        }}>
-                        <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'space-between',
-                            }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                              <Avatar
-                                sx={{
-                                  width: 32,
-                                  height: 32,
-                                  mr: 1,
-                                  bgcolor: (theme) =>
-                                    theme.palette.primary.main,
-                                  fontSize: '0.875rem',
-                                }}>
-                                {member.name.charAt(0)}
-                              </Avatar>
-                              <Box>
-                                <Typography
-                                  variant='body1'
-                                  sx={{
-                                    fontSize: { xs: '0.9rem', sm: '1rem' },
-                                  }}>
-                                  {member.name}
-                                </Typography>
-                              </Box>
-                            </Box>
-                            <IconButton size='small'>
-                              <ArrowForwardIcon fontSize='small' />
-                            </IconButton>
-                          </Box>
-                        </CardContent>
-                      </Card>
-                    ))
-                  ) : (
-                    <Typography
-                      variant='body2'
-                      color='text.secondary'
-                      sx={{ mb: 2 }}>
-                      No family members found.
-                    </Typography>
-                  )}
-                  <Button
-                    variant='text'
-                    size='small'
-                    sx={{ alignSelf: 'center', mt: 1 }}>
-                    Manage Family
+                    View More
                   </Button>
-                </Stack>
+                </Box>
               </Paper>
             </Grid>
 
             {/* Quick Actions */}
-            <Grid item xs={12} sm={4} sx={{ display: 'flex' }}>
+            <Grid item xs={12} md={6} lg={2}>
               <Paper
                 elevation={2}
                 sx={{
-                  p: { xs: 2, sm: 3 },
-                  borderRadius: 3,
+                  p: 3,
+                  borderRadius: 2,
                   height: '100%',
-                  width: '100%',
-                  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                  bgcolor: (theme) => theme.palette.background.paper,
-                  '&:hover': {
-                    transform: 'translateY(-5px)',
-                    boxShadow: isDarkMode
-                      ? '0 12px 20px rgba(0, 0, 0, 0.3)'
-                      : '0 12px 20px rgba(0, 0, 0, 0.1)',
-                  },
+                  display: 'flex',
+                  flexDirection: 'column',
                 }}>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    mb: 2,
-                  }}>
-                  <Typography
-                    variant='h6'
-                    sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
-                    Quick Actions
-                  </Typography>
-                  <IconButton
-                    color='primary'
-                    size='small'
-                    sx={{
-                      bgcolor: (theme) =>
-                        alpha(theme.palette.primary.main, 0.1),
-                    }}>
-                    <AddPhotoAlternateIcon />
-                  </IconButton>
-                </Box>
-                <Divider sx={{ mb: 3 }} />
-                <Stack spacing={2}>
-                  <Button
-                    variant='outlined'
-                    color='primary'
-                    startIcon={<AddPhotoAlternateIcon />}
-                    onClick={handleAddMemory}
-                    fullWidth
-                    sx={{
-                      justifyContent: 'flex-start',
-                      py: 1.5,
-                      borderRadius: 2,
-                      fontSize: { xs: '0.8rem', sm: '0.875rem' },
-                    }}>
-                    Create New Memory
-                  </Button>
-                  <Button
-                    variant='outlined'
-                    color='secondary'
-                    startIcon={<SpaIcon />}
-                    onClick={toggleBreathingExercise}
-                    fullWidth
-                    sx={{
-                      justifyContent: 'flex-start',
-                      py: 1.5,
-                      borderRadius: 2,
-                      fontSize: { xs: '0.8rem', sm: '0.875rem' },
-                    }}>
-                    Breathing Exercise
-                  </Button>
-                  <Button
-                    variant='outlined'
-                    color='info'
-                    startIcon={<FamilyRestroomIcon />}
-                    fullWidth
-                    sx={{
-                      justifyContent: 'flex-start',
-                      py: 1.5,
-                      borderRadius: 2,
-                      fontSize: { xs: '0.8rem', sm: '0.875rem' },
-                    }}>
-                    Family Connections
-                  </Button>
-                </Stack>
-                {showBreathingExercise && (
-                  <Box sx={{ mt: 3 }}>
-                    <BreathingExercise />
-                  </Box>
-                )}
+                <Typography variant='h6' gutterBottom>
+                  Quick Actions
+                </Typography>
+                <Grid container spacing={2} sx={{ mt: 1 }}>
+                  <Grid item xs={6}>
+                    <Button
+                      component={Link}
+                      to='/add-memory'
+                      variant='outlined'
+                      color='primary'
+                      fullWidth
+                      startIcon={<AddPhotoAlternateIcon />}
+                      sx={{
+                        height: '100%',
+                        py: 2,
+                        '&:hover': {
+                          color: 'primary.main',
+                          borderColor: 'primary.main',
+                          bgcolor: alpha(theme.palette.primary.main, 0.05),
+                        },
+                      }}>
+                      Add Memory
+                    </Button>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Button
+                      onClick={toggleBreathingExercise}
+                      variant='outlined'
+                      color='secondary'
+                      fullWidth
+                      startIcon={<SpaIcon />}
+                      sx={{
+                        height: '100%',
+                        py: 2,
+                        '&:hover': {
+                          color: 'secondary.main',
+                          borderColor: 'secondary.main',
+                          bgcolor: alpha(theme.palette.secondary.main, 0.05),
+                        },
+                      }}>
+                      Breathing
+                    </Button>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Button
+                      component={Link}
+                      to='/patient/timeline'
+                      variant='outlined'
+                      color='primary'
+                      fullWidth
+                      startIcon={<TimelineIcon />}
+                      sx={{
+                        height: '100%',
+                        py: 2,
+                        '&:hover': {
+                          color: 'primary.main',
+                          borderColor: 'primary.main',
+                          bgcolor: alpha(theme.palette.primary.main, 0.05),
+                        },
+                      }}>
+                      Timeline
+                    </Button>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Button
+                      component={Link}
+                      to='/saved-locations'
+                      variant='outlined'
+                      color='secondary'
+                      fullWidth
+                      startIcon={<LocationOnIcon />}
+                      sx={{
+                        height: '100%',
+                        py: 2,
+                        '&:hover': {
+                          color: 'secondary.main',
+                          borderColor: 'secondary.main',
+                          bgcolor: alpha(theme.palette.secondary.main, 0.05),
+                        },
+                      }}>
+                      Locations
+                    </Button>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Button
+                      component={Link}
+                      to='/calendar'
+                      variant='outlined'
+                      color='primary'
+                      fullWidth
+                      startIcon={<CalendarTodayIcon />}
+                      sx={{
+                        height: '100%',
+                        py: 2,
+                        '&:hover': {
+                          color: 'primary.main',
+                          borderColor: 'primary.main',
+                          bgcolor: alpha(theme.palette.primary.main, 0.05),
+                        },
+                      }}>
+                      Calendar
+                    </Button>
+                  </Grid>
+                </Grid>
               </Paper>
             </Grid>
           </Grid>

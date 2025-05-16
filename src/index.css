@@ -11,6 +11,10 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  --scrollbar-track-color: rgba(0, 0, 0, 0.1);
+  --scrollbar-thumb-color: rgba(255, 132, 0, 0.5);
+  --scrollbar-thumb-hover-color: rgba(255, 132, 0, 0.8);
 }
 
 a {
@@ -65,4 +69,94 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
+}
+
+/* Global scrollbar styling */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb-color) var(--scrollbar-track-color);
+}
+
+/* Webkit-based browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track-color);
+  border-radius: 10px;
+  backdrop-filter: blur(5px);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb-color);
+  border-radius: 10px;
+  transition: background 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover-color);
+}
+
+/* Dark mode scrollbar variations */
+.dark-mode * {
+  --scrollbar-track-color: rgba(255, 255, 255, 0.05);
+  --scrollbar-thumb-color: rgba(255, 143, 0, 0.4);
+  --scrollbar-thumb-hover-color: rgba(255, 143, 0, 0.7);
+}
+
+/* Smooth scrolling for the whole page */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Responsive styles */
+@media screen and (max-width: 600px) {
+  /* Mobile-specific adjustments */
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+
+  /* Reduce paddings and margins on small screens */
+  .MuiContainer-root {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+
+  /* Optimize font sizes for mobile */
+  body {
+    font-size: 14px;
+  }
+
+  /* Ensure buttons are easier to tap on mobile */
+  .MuiButton-root,
+  .MuiIconButton-root {
+    min-width: 40px;
+    min-height: 40px;
+  }
+}
+
+/* Tablet optimizations */
+@media screen and (min-width: 601px) and (max-width: 960px) {
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+}
+
+/* Ensure cards don't overflow and scroll properly */
+.card-content-container {
+  max-height: 100%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Prevent text overflow on small screens */
+.text-ellipsis {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

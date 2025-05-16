@@ -214,7 +214,10 @@ const PatientLogin = () => {
                 variant='outlined'
                 required
                 InputProps={{
-                  sx: { borderRadius: 2, fontSize: '1.1rem' },
+                  sx: {
+                    borderRadius: 2,
+                    fontSize: { xs: '0.9rem', sm: '1.1rem' },
+                  },
                   endAdornment: (
                     <InputAdornment position='end'>
                       <IconButton
@@ -238,8 +241,8 @@ const PatientLogin = () => {
                 sx={{
                   mt: 3,
                   mb: 2,
-                  py: 1.5,
-                  fontSize: '1.1rem',
+                  py: { xs: 1.2, sm: 1.5 },
+                  fontSize: { xs: '0.95rem', sm: '1.1rem' },
                   fontWeight: 600,
                   textTransform: 'none',
                   borderRadius: 2,
@@ -284,8 +287,8 @@ const PatientLogin = () => {
                 color='primary'
                 size='large'
                 sx={{
-                  py: 1.5,
-                  fontSize: '1.1rem',
+                  py: { xs: 1.2, sm: 1.5 },
+                  fontSize: { xs: '0.95rem', sm: '1.1rem' },
                   fontWeight: 600,
                   textTransform: 'none',
                   borderRadius: 2,

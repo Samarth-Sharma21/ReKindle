@@ -40,7 +40,8 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     setUser(null);
     // localStorage is handled by the useEffect
-    navigate('/');
+    // Redirect to landing page
+    navigate('/', { replace: true });
   };
 
   const value = {

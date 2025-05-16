@@ -415,8 +415,10 @@ const MemoryCarousel = ({
       sx={{
         position: 'relative',
         overflow: 'hidden',
-        width: '100%',
+        width: { xs: '100%', md: '900px' },
+        maxWidth: '100%',
         height: '100%',
+        mx: 'auto', // Center the carousel
         bgcolor: (theme) =>
           theme.palette.mode === 'dark'
             ? alpha(theme.palette.background.paper, 0.7)

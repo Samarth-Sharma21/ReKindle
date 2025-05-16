@@ -37,6 +37,7 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import DarkModeOutlinedIcon from '@mui/icons-material/DarkModeOutlined';
 import LightModeOutlinedIcon from '@mui/icons-material/LightModeOutlined';
+import CalendarTodayOutlinedIcon from '@mui/icons-material/CalendarTodayOutlined';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { motion } from 'framer-motion';
@@ -74,6 +75,10 @@ const StyledAppBar = styled(AppBar)(({ theme, visible }) => ({
   borderBottom: `1px solid ${visible ? theme.palette.divider : 'transparent'}`,
   position: 'fixed',
   top: 0,
+  left: 0,
+  right: 0,
+  width: '100%',
+  maxWidth: '100%',
   transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
   transform: visible ? 'translateY(0)' : 'translateY(-100%)',
 }));
@@ -263,6 +268,11 @@ const Layout = () => {
         : '/family/dashboard/timeline',
     },
     {
+      text: 'Calendar & Tasks',
+      icon: <CalendarTodayOutlinedIcon />,
+      path: '/calendar',
+    },
+    {
       text: 'Add Memory',
       icon: <AddPhotoAlternateOutlinedIcon />,
       path: '/add-memory',
@@ -450,7 +460,7 @@ const Layout = () => {
       <CssBaseline />
       <StyledAppBar
         visible={headerVisible}
-        sx={{ 
+        sx={{
           zIndex: (theme) => theme.zIndex.drawer + 2,
           boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
         }}>
@@ -640,6 +650,9 @@ const Layout = () => {
           minHeight: '100vh',
           pt: { xs: '70px', sm: '75px' },
           transition: 'padding-top 0.3s ease',
+          width: '100%',
+          maxWidth: '100%',
+          boxSizing: 'border-box',
         }}>
         <motion.div
           initial={{ opacity: 0 }}

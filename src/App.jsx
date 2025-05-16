@@ -28,6 +28,11 @@ const BreathingGame = lazy(() => import('./pages/BreathingGame'));
 const Settings = lazy(() => import('./pages/Settings'));
 const PricingPage = lazy(() => import('./pages/PricingPage'));
 const SavedLocations = lazy(() => import('./pages/SavedLocations'));
+const CalendarPage = lazy(() => import('./pages/CalendarPage'));
+const TaskManagerPage = lazy(() => import('./pages/TaskManagerPage'));
+const FamilyTaskManagerPage = lazy(() =>
+  import('./pages/FamilyTaskManagerPage')
+);
 
 // Loading component for suspense fallback
 const LoadingFallback = () => (
@@ -143,6 +148,30 @@ function App() {
                     element={
                       <ProtectedRoute userType='any'>
                         <SavedLocations />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path='/calendar'
+                    element={
+                      <ProtectedRoute userType='any'>
+                        <CalendarPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path='/task-manager'
+                    element={
+                      <ProtectedRoute userType='patient'>
+                        <TaskManagerPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path='/family/task-manager'
+                    element={
+                      <ProtectedRoute userType='family'>
+                        <FamilyTaskManagerPage />
                       </ProtectedRoute>
                     }
                   />

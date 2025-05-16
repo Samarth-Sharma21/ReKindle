@@ -26,6 +26,11 @@ import {
   CircularProgress,
   Snackbar,
   Tooltip,
+  Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import PersonIcon from '@mui/icons-material/Person';
@@ -33,6 +38,8 @@ import PeopleIcon from '@mui/icons-material/People';
 import AccessibilityNewIcon from '@mui/icons-material/AccessibilityNew';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import SecurityIcon from '@mui/icons-material/Security';
+import DeleteIcon from '@mui/icons-material/Delete';
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
@@ -62,11 +69,11 @@ const Settings = () => {
     message: '',
     severity: 'success',
   });
+  const muiTheme = useMuiTheme();
+  const isMobile = useMediaQuery(muiTheme.breakpoints.down('sm'));
 
   // Get theme from context
   const { mode, toggleTheme } = useTheme();
-  const muiTheme = useMuiTheme();
-  const isMobile = useMediaQuery(muiTheme.breakpoints.down('sm'));
   const isTablet = useMediaQuery(muiTheme.breakpoints.between('sm', 'md'));
 
   // User data state
@@ -85,6 +92,12 @@ const Settings = () => {
   // State for family members
   const [familyMembers, setFamilyMembers] = useState([]);
   const [loadingFamily, setLoadingFamily] = useState(false);
+  const [openFamilyDialog, setOpenFamilyDialog] = useState(false);
+  const [newFamilyMember, setNewFamilyMember] = useState({
+    name: '',
+    email: '',
+    relation: '',
+  });
 
   // Fetch user data from Supabase
   useEffect(() => {
@@ -112,7 +125,8 @@ const Settings = () => {
             avatar_url: data.avatar_url || null,
             fontSize: data.font_size || 16,
             highContrast: data.high_contrast || false,
-            notifications: data.notifications !== undefined ? data.notifications : true,
+            notifications:
+              data.notifications !== undefined ? data.notifications : true,
             reminderFrequency: data.reminder_frequency || 'daily',
             locationSharing: data.location_sharing || false,
           });
@@ -126,7 +140,7 @@ const Settings = () => {
           .eq('patient_id', user.id);
 
         if (familyError) throw familyError;
-        
+
         if (familyData) {
           setFamilyMembers(familyData);
         }
@@ -178,6 +192,98 @@ const Settings = () => {
     setUserData({ ...userData, fontSize: newValue });
   };
 
+  // Family member management functions
+  const handleOpenAddFamilyDialog = () => {
+    setNewFamilyMember({ name: '', email: '', relation: '' });
+    setOpenFamilyDialog(true);
+  };
+
+  const handleCloseFamilyDialog = () => {
+    setOpenFamilyDialog(false);
+  };
+
+  const handleFamilyInputChange = (e) => {
+    const { name, value } = e.target;
+    setNewFamilyMember({ ...newFamilyMember, [name]: value });
+  };
+
+  const handleAddFamilyMember = async () => {
+    // Validate inputs
+    if (
+      !newFamilyMember.name ||
+      !newFamilyMember.email ||
+      !newFamilyMember.relation
+    ) {
+      showNotification('All fields are required', 'error');
+      return;
+    }
+
+    try {
+      // Add new family member to database
+      const { data, error } = await supabase.from('family_members').insert([
+        {
+          patient_id: user.id,
+          name: newFamilyMember.name,
+          email: newFamilyMember.email,
+          relation: newFamilyMember.relation,
+          status: 'pending',
+        },
+      ]);
+
+      if (error) throw error;
+
+      // Add to local state
+      const newMemberWithId = data?.[0] || {
+        ...newFamilyMember,
+        id: Date.now().toString(),
+        patient_id: user.id,
+        status: 'pending',
+      };
+      setFamilyMembers([...familyMembers, newMemberWithId]);
+
+      showNotification('Family member added successfully');
+      handleCloseFamilyDialog();
+    } catch (error) {
+      console.error('Error adding family member:', error.message);
+      showNotification('Failed to add family member', 'error');
+    }
+  };
+
+  const handleRemoveFamilyMember = async (memberId) => {
+    try {
+      // Delete from database
+      const { error } = await supabase
+        .from('family_members')
+        .delete()
+        .eq('id', memberId);
+
+      if (error) throw error;
+
+      // Update local state
+      setFamilyMembers(
+        familyMembers.filter((member) => member.id !== memberId)
+      );
+
+      showNotification('Family member removed successfully');
+    } catch (error) {
+      console.error('Error removing family member:', error.message);
+      showNotification('Failed to remove family member', 'error');
+    }
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'active':
+        return muiTheme.palette.success.main;
+      case 'pending':
+        return muiTheme.palette.warning.main;
+      case 'inactive':
+        return muiTheme.palette.error.main;
+      default:
+        return muiTheme.palette.info.main;
+    }
+  };
+
   const handleSaveProfile = async () => {
     if (!user) {
       showNotification('You must be logged in to update your profile', 'error');
@@ -211,16 +317,19 @@ const Settings = () => {
         const savedLocations = localStorage.getItem('savedLocations');
         if (savedLocations) {
           const locations = JSON.parse(savedLocations);
-          
+
           // Save each location to the database if it doesn't already have an ID
           for (const location of locations) {
             if (!location.id || location.id.toString().startsWith('local_')) {
               try {
-                await locationService.saveLocation({
-                  name: location.name,
-                  address: location.address,
-                  notes: location.notes || '',
-                }, user.id);
+                await locationService.saveLocation(
+                  {
+                    name: location.name,
+                    address: location.address,
+                    notes: location.notes || '',
+                  },
+                  user.id
+                );
               } catch (locError) {
                 console.error('Error saving location:', locError);
               }
@@ -283,18 +392,16 @@ const Settings = () => {
           open={notification.open}
           autoHideDuration={4000}
           onClose={handleCloseNotification}
-          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-        >
-          <Alert 
-            onClose={handleCloseNotification} 
-            severity={notification.severity} 
+          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
+          <Alert
+            onClose={handleCloseNotification}
+            severity={notification.severity}
             sx={{ width: '100%' }}
-            variant="filled"
-          >
+            variant='filled'>
             {notification.message}
           </Alert>
         </Snackbar>
-        
+
         {loading && (
           <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
             <CircularProgress />
@@ -353,8 +460,8 @@ const Settings = () => {
               }}
             />
             <Tab
-              icon={<NotificationsIcon />}
-              label={isMobile ? '' : 'Notifications'}
+              icon={<SecurityIcon />}
+              label={isMobile ? '' : 'Security'}
               iconPosition='start'
               sx={{
                 minWidth: { xs: 'auto', sm: '160px' },
@@ -377,7 +484,12 @@ const Settings = () => {
 
               <Grid container spacing={{ xs: 2, sm: 3 }}>
                 <Grid item xs={12} sm={4} sx={{ textAlign: 'center' }}>
-                  <Box sx={{ position: 'relative', width: 'fit-content', mx: 'auto' }}>
+                  <Box
+                    sx={{
+                      position: 'relative',
+                      width: 'fit-content',
+                      mx: 'auto',
+                    }}>
                     <Avatar
                       src={userData.avatar_url}
                       sx={{
@@ -389,19 +501,20 @@ const Settings = () => {
                         borderColor: 'primary.main',
                         fontSize: { xs: '2.5rem', sm: '3rem' },
                       }}>
-                      {userData.name ? userData.name.charAt(0).toUpperCase() : 'U'}
+                      {userData.name
+                        ? userData.name.charAt(0).toUpperCase()
+                        : 'U'}
                     </Avatar>
-                    <Tooltip title="Upload photo">
-                      <IconButton 
+                    <Tooltip title='Upload photo'>
+                      <IconButton
                         sx={{
                           position: 'absolute',
                           bottom: 10,
                           right: -10,
                           bgcolor: 'background.paper',
                           boxShadow: 1,
-                          '&:hover': { bgcolor: 'background.default' }
-                        }}
-                      >
+                          '&:hover': { bgcolor: 'background.default' },
+                        }}>
                         <PhotoCameraIcon />
                       </IconButton>
                     </Tooltip>
@@ -418,7 +531,7 @@ const Settings = () => {
                     margin='normal'
                     variant='outlined'
                     InputProps={{
-                      sx: { borderRadius: 1.5 }
+                      sx: { borderRadius: 1.5 },
                     }}
                   />
                   <TextField
@@ -430,9 +543,9 @@ const Settings = () => {
                     margin='normal'
                     variant='outlined'
                     disabled
-                    helperText="Email cannot be changed directly. Contact support for assistance."
+                    helperText='Email cannot be changed directly. Contact support for assistance.'
                     InputProps={{
-                      sx: { borderRadius: 1.5 }
+                      sx: { borderRadius: 1.5 },
                     }}
                   />
                   <TextField
@@ -443,9 +556,9 @@ const Settings = () => {
                     onChange={handleInputChange}
                     margin='normal'
                     variant='outlined'
-                    placeholder="e.g. 9876543210"
+                    placeholder='e.g. 9876543210'
                     InputProps={{
-                      sx: { borderRadius: 1.5 }
+                      sx: { borderRadius: 1.5 },
                     }}
                   />
                 </Grid>
@@ -462,12 +575,14 @@ const Settings = () => {
                       color='primary'
                       onClick={handleSaveProfile}
                       disabled={saving}
-                      startIcon={saving ? <CircularProgress size={20} /> : <SaveIcon />}
+                      startIcon={
+                        saving ? <CircularProgress size={20} /> : <SaveIcon />
+                      }
                       sx={{
                         borderRadius: 2,
                         px: { xs: 3, sm: 4 },
                         py: { xs: 1, sm: 1.2 },
-                        width: { xs: '100%', sm: 'auto' }
+                        width: { xs: '100%', sm: 'auto' },
                       }}>
                       {saving ? 'Saving...' : 'Save Changes'}
                     </Button>
@@ -487,39 +602,42 @@ const Settings = () => {
                   fontSize: { xs: '1.1rem', sm: '1.25rem' },
                   textAlign: { xs: 'center', md: 'left' },
                   fontWeight: 600,
-                  mb: { xs: 1.5, sm: 2 }
+                  mb: { xs: 1.5, sm: 2 },
                 }}>
                 Display Settings
               </Typography>
-              
-              <Typography variant='body2' paragraph color='text.secondary' sx={{
-                textAlign: { xs: 'center', sm: 'left' },
-                mb: { xs: 2, sm: 2.5 }
-              }}>
-                Customize how the application looks and feels to improve your experience.
+
+              <Typography
+                variant='body2'
+                paragraph
+                color='text.secondary'
+                sx={{
+                  textAlign: { xs: 'center', sm: 'left' },
+                  mb: { xs: 2, sm: 2.5 },
+                }}>
+                Customize how the application looks and feels to improve your
+                experience.
               </Typography>
 
               {/* Theme Toggle */}
-              <Paper 
-                elevation={1} 
+              <Paper
+                elevation={1}
                 sx={{
                   p: { xs: 2, sm: 2.5 },
                   mb: { xs: 3, sm: 4 },
                   borderRadius: 2,
                   bgcolor: 'background.paper',
-                }}
-              >
-                <Typography 
-                  variant='subtitle1' 
-                  sx={{ 
-                    fontWeight: 500, 
+                }}>
+                <Typography
+                  variant='subtitle1'
+                  sx={{
+                    fontWeight: 500,
                     mb: 2,
-                    textAlign: { xs: 'center', sm: 'left' } 
-                  }}
-                >
+                    textAlign: { xs: 'center', sm: 'left' },
+                  }}>
                   Theme Mode
                 </Typography>
-                
+
                 <Box
                   sx={{
                     display: 'flex',
@@ -536,16 +654,21 @@ const Settings = () => {
                       />
                     }
                     label={
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Box
+                        sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         {mode === 'dark' ? (
                           <>
                             <DarkModeIcon color='primary' />
-                            <Typography sx={{ fontWeight: 500 }}>Dark Mode</Typography>
+                            <Typography sx={{ fontWeight: 500 }}>
+                              Dark Mode
+                            </Typography>
                           </>
                         ) : (
                           <>
                             <LightModeIcon color='primary' />
-                            <Typography sx={{ fontWeight: 500 }}>Light Mode</Typography>
+                            <Typography sx={{ fontWeight: 500 }}>
+                              Light Mode
+                            </Typography>
                           </>
                         )}
                       </Box>
@@ -555,26 +678,24 @@ const Settings = () => {
               </Paper>
 
               {/* Font Size Control */}
-              <Paper 
-                elevation={1} 
+              <Paper
+                elevation={1}
                 sx={{
                   p: { xs: 2, sm: 2.5 },
                   mb: { xs: 3, sm: 4 },
                   borderRadius: 2,
                   bgcolor: 'background.paper',
-                }}
-              >
-                <Typography 
-                  variant='subtitle1' 
-                  sx={{ 
-                    fontWeight: 500, 
+                }}>
+                <Typography
+                  variant='subtitle1'
+                  sx={{
+                    fontWeight: 500,
                     mb: 2,
-                    textAlign: { xs: 'center', sm: 'left' } 
-                  }}
-                >
+                    textAlign: { xs: 'center', sm: 'left' },
+                  }}>
                   Text Size
                 </Typography>
-                
+
                 <Box sx={{ px: { xs: 1, sm: 2 }, mb: 1 }}>
                   <Typography
                     id='font-size-slider'
@@ -585,21 +706,20 @@ const Settings = () => {
                       display: 'flex',
                       justifyContent: { xs: 'space-between', sm: 'flex-start' },
                       alignItems: 'center',
-                      gap: { xs: 0, sm: 2 }
+                      gap: { xs: 0, sm: 2 },
                     }}>
-                    <span>Font Size:</span> 
-                    <Box 
-                      component="span" 
-                      sx={{ 
-                        fontWeight: 600, 
+                    <span>Font Size:</span>
+                    <Box
+                      component='span'
+                      sx={{
+                        fontWeight: 600,
                         color: 'primary.main',
-                        fontSize: { xs: '1.1rem', sm: '1.2rem' }
-                      }}
-                    >
+                        fontSize: { xs: '1.1rem', sm: '1.2rem' },
+                      }}>
                       {userData.fontSize}px
                     </Box>
                   </Typography>
-                  
+
                   <Box sx={{ px: { xs: 1, sm: 2 } }}>
                     <Slider
                       value={userData.fontSize}
@@ -622,7 +742,8 @@ const Settings = () => {
                           height: 24,
                           width: 24,
                           '&:hover, &.Mui-focusVisible': {
-                            boxShadow: '0px 0px 0px 8px rgba(25, 118, 210, 0.16)',
+                            boxShadow:
+                              '0px 0px 0px 8px rgba(25, 118, 210, 0.16)',
                           },
                         },
                         '& .MuiSlider-track': {
@@ -635,47 +756,46 @@ const Settings = () => {
                       }}
                     />
                   </Box>
-                  
-                  <Typography 
-                    variant='body2' 
-                    color='text.secondary' 
-                    sx={{ 
-                      mt: 2, 
+
+                  <Typography
+                    variant='body2'
+                    color='text.secondary'
+                    sx={{
+                      mt: 2,
                       textAlign: { xs: 'center', sm: 'left' },
-                      fontSize: { xs: '0.75rem', sm: '0.875rem' }
-                    }}
-                  >
-                    Adjust the slider to change text size throughout the application
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                    }}>
+                    Adjust the slider to change text size throughout the
+                    application
                   </Typography>
                 </Box>
               </Paper>
-              
+
               {/* High Contrast Mode */}
-              <Paper 
-                elevation={1} 
+              <Paper
+                elevation={1}
                 sx={{
                   p: { xs: 2, sm: 2.5 },
                   mb: { xs: 3, sm: 4 },
                   borderRadius: 2,
                   bgcolor: 'background.paper',
-                }}
-              >
-                <Typography 
-                  variant='subtitle1' 
-                  sx={{ 
-                    fontWeight: 500, 
+                }}>
+                <Typography
+                  variant='subtitle1'
+                  sx={{
+                    fontWeight: 500,
                     mb: 2,
-                    textAlign: { xs: 'center', sm: 'left' } 
-                  }}
-                >
+                    textAlign: { xs: 'center', sm: 'left' },
+                  }}>
                   Visibility Options
                 </Typography>
-                
-                <Box sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: { xs: 'center', sm: 'flex-start' },
-                }}>
+
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: { xs: 'center', sm: 'flex-start' },
+                  }}>
                   <FormControlLabel
                     control={
                       <Switch
@@ -689,23 +809,23 @@ const Settings = () => {
                     label='High Contrast Mode'
                     sx={{ mb: 1 }}
                   />
-                  
-                  <Typography 
-                    variant='body2' 
-                    color='text.secondary' 
-                    sx={{ 
-                      mt: 1, 
+
+                  <Typography
+                    variant='body2'
+                    color='text.secondary'
+                    sx={{
+                      mt: 1,
                       textAlign: { xs: 'center', sm: 'left' },
-                      fontSize: { xs: '0.75rem', sm: '0.875rem' }
-                    }}
-                  >
-                    Increases contrast between text and background for better readability
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                    }}>
+                    Increases contrast between text and background for better
+                    readability
                   </Typography>
                 </Box>
               </Paper>
-              
+
               <Divider sx={{ my: { xs: 2, sm: 3 } }} />
-              
+
               {/* Additional Accessibility Controls */}
               <Typography
                 variant='h6'
@@ -715,11 +835,11 @@ const Settings = () => {
                   textAlign: { xs: 'center', sm: 'left' },
                   fontWeight: 600,
                   mb: { xs: 2, sm: 2.5 },
-                  mt: { xs: 2, sm: 3 }
+                  mt: { xs: 2, sm: 3 },
                 }}>
                 Additional Controls
               </Typography>
-              
+
               <AccessibilityControls />
             </Box>
           )}
@@ -734,30 +854,29 @@ const Settings = () => {
                 Manage your connected family members and caregivers who can
                 access your memories and help you.
               </Typography>
-              
+
               {/* Family Members Section */}
-              <Paper 
-                elevation={1} 
+              <Paper
+                elevation={1}
                 sx={{
                   p: { xs: 2, sm: 2.5 },
                   mb: { xs: 3, sm: 4 },
                   borderRadius: 2,
                   bgcolor: 'background.paper',
-                }}
-              >
-                <Typography 
-                  variant='subtitle1' 
-                  sx={{ 
-                    fontWeight: 500, 
+                }}>
+                <Typography
+                  variant='subtitle1'
+                  sx={{
+                    fontWeight: 500,
                     mb: 2,
-                    textAlign: { xs: 'center', sm: 'left' } 
-                  }}
-                >
+                    textAlign: { xs: 'center', sm: 'left' },
+                  }}>
                   Connected Family Members
                 </Typography>
-                
+
                 {loadingFamily ? (
-                  <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
+                  <Box
+                    sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
                     <CircularProgress size={24} />
                   </Box>
                 ) : familyMembers.length > 0 ? (
@@ -776,71 +895,108 @@ const Settings = () => {
                           flexDirection: { xs: 'column', sm: 'row' },
                           alignItems: { xs: 'flex-start', sm: 'center' },
                           justifyContent: 'space-between',
-                          gap: 2
-                        }}
-                      >
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
+                          gap: 2,
+                        }}>
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 2,
+                            width: '100%',
+                          }}>
                           <Avatar sx={{ bgcolor: 'primary.main' }}>
-                            {member.name ? member.name.charAt(0).toUpperCase() : 'F'}
+                            {member.name
+                              ? member.name.charAt(0).toUpperCase()
+                              : 'F'}
                           </Avatar>
                           <Box sx={{ flexGrow: 1 }}>
-                            <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
+                            <Typography
+                              variant='subtitle1'
+                              sx={{ fontWeight: 500 }}>
                               {member.name}
                             </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                              {member.relationship || 'Family Member'}
+                            <Typography variant='body2' color='text.secondary'>
+                              {member.relation ||
+                                member.relationship ||
+                                'Family Member'}
                             </Typography>
-                            <Typography variant="body2" color="text.secondary">
+                            <Typography variant='body2' color='text.secondary'>
                               {member.email}
                             </Typography>
+                            <Box sx={{ display: 'flex', mt: 1 }}>
+                              <Chip
+                                label={
+                                  member.status === 'active'
+                                    ? 'Active'
+                                    : 'Connected'
+                                }
+                                size='small'
+                                variant='outlined'
+                                color='success'
+                                sx={{ mr: 1, height: 24, fontSize: '0.75rem' }}
+                              />
+                            </Box>
                           </Box>
+                          <IconButton
+                            color='error'
+                            onClick={() => handleRemoveFamilyMember(member.id)}
+                            aria-label='delete family member'>
+                            <DeleteIcon />
+                          </IconButton>
                         </Box>
                       </Paper>
                     ))}
                     <Box sx={{ mt: 3, textAlign: 'center' }}>
-                      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                        Family members can register using your email address to connect to your account.
+                      <Typography
+                        variant='body2'
+                        color='text.secondary'
+                        sx={{ mt: 2 }}>
+                        Family members can register using your email address to
+                        connect to your account.
                       </Typography>
                     </Box>
                   </Box>
                 ) : (
                   <Box sx={{ textAlign: 'center', py: 3 }}>
-                    <Typography variant="body1" sx={{ mb: 2 }}>
+                    <Typography variant='body1' sx={{ mb: 2 }}>
                       No family members connected yet.
                     </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                      Family members can register using your email address to connect to your account.
+                    <Typography
+                      variant='body2'
+                      color='text.secondary'
+                      sx={{ mb: 3 }}>
+                      Family members can register using your email address to
+                      connect to your account.
                     </Typography>
                   </Box>
                 )}
               </Paper>
-              
+
               {/* Location Sharing Section */}
-              <Paper 
-                elevation={1} 
+              <Paper
+                elevation={1}
                 sx={{
                   p: { xs: 2, sm: 2.5 },
                   mb: { xs: 3, sm: 4 },
                   borderRadius: 2,
                   bgcolor: 'background.paper',
-                }}
-              >
-                <Typography 
-                  variant='subtitle1' 
-                  sx={{ 
-                    fontWeight: 500, 
+                }}>
+                <Typography
+                  variant='subtitle1'
+                  sx={{
+                    fontWeight: 500,
                     mb: 2,
-                    textAlign: { xs: 'center', sm: 'left' } 
-                  }}
-                >
+                    textAlign: { xs: 'center', sm: 'left' },
+                  }}>
                   Location Sharing Preferences
                 </Typography>
-                
-                <Box sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: { xs: 'center', sm: 'flex-start' },
-                }}>
+
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: { xs: 'center', sm: 'flex-start' },
+                  }}>
                   <FormControlLabel
                     control={
                       <Switch
@@ -854,81 +1010,85 @@ const Settings = () => {
                     label='Share my location with family members'
                     sx={{ mb: 1 }}
                   />
-                  
-                  <Typography 
-                    variant='body2' 
-                    color='text.secondary' 
-                    sx={{ 
-                      mt: 1, 
+
+                  <Typography
+                    variant='body2'
+                    color='text.secondary'
+                    sx={{
+                      mt: 1,
                       textAlign: { xs: 'center', sm: 'left' },
-                      fontSize: { xs: '0.75rem', sm: '0.875rem' }
-                    }}
-                  >
-                    When enabled, your family members can see your current location
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                    }}>
+                    When enabled, your family members can see your current
+                    location
                   </Typography>
-                  
+
                   <Button
                     variant='outlined'
                     color='primary'
                     sx={{ mt: 2, borderRadius: 2 }}
-                    onClick={() => navigate('/saved-locations')}
-                  >
+                    onClick={() => navigate('/saved-locations')}>
                     Manage Saved Locations
                   </Button>
                 </Box>
               </Paper>
+
+              {/* Family member management dialogs removed - now handled by administrators */}
             </Box>
           )}
 
           {/* Notifications Tab */}
           {activeTab === 3 && (
             <Box sx={{ p: { xs: 2, sm: 3 } }}>
-              <Typography 
-                variant='h6' 
-                gutterBottom 
+              <Typography
+                variant='h6'
+                gutterBottom
                 sx={{
                   fontSize: { xs: '1.1rem', sm: '1.25rem' },
                   textAlign: { xs: 'center', sm: 'left' },
                   fontWeight: 600,
-                  mb: { xs: 1.5, sm: 2 }
-                }}
-              >
+                  mb: { xs: 1.5, sm: 2 },
+                }}>
                 Notification Preferences
               </Typography>
-              
-              <Typography variant='body2' paragraph color='text.secondary' sx={{
-                textAlign: { xs: 'center', sm: 'left' },
-                mb: { xs: 2, sm: 2.5 }
-              }}>
-                Customize how and when you receive notifications about your memories and connections.
+
+              <Typography
+                variant='body2'
+                paragraph
+                color='text.secondary'
+                sx={{
+                  textAlign: { xs: 'center', sm: 'left' },
+                  mb: { xs: 2, sm: 2.5 },
+                }}>
+                Customize how and when you receive notifications about your
+                memories and connections.
               </Typography>
-              
+
               {/* Enable Notifications Toggle */}
-              <Paper 
-                elevation={1} 
+              <Paper
+                elevation={1}
                 sx={{
                   p: { xs: 2, sm: 2.5 },
                   mb: { xs: 3, sm: 4 },
                   borderRadius: 2,
                   bgcolor: 'background.paper',
-                }}
-              >
-                <Typography 
-                  variant='subtitle1' 
-                  sx={{ 
-                    fontWeight: 500, 
+                }}>
+                <Typography
+                  variant='subtitle1'
+                  sx={{
+                    fontWeight: 500,
                     mb: 2,
-                    textAlign: { xs: 'center', sm: 'left' } 
-                  }}
-                >
+                    textAlign: { xs: 'center', sm: 'left' },
+                  }}>
                   Notification Settings
                 </Typography>
-                
-                <Box sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: { xs: 'center', sm: 'flex-start' },
-                }}>
+
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: { xs: 'center', sm: 'flex-start' },
+                  }}>
                   <FormControlLabel
                     control={
                       <Switch
@@ -942,52 +1102,48 @@ const Settings = () => {
                     label='Enable Notifications'
                     sx={{ mb: 1 }}
                   />
-                  
-                  <Typography 
-                    variant='body2' 
-                    color='text.secondary' 
-                    sx={{ 
-                      mt: 1, 
+
+                  <Typography
+                    variant='body2'
+                    color='text.secondary'
+                    sx={{
+                      mt: 1,
                       textAlign: { xs: 'center', sm: 'left' },
-                      fontSize: { xs: '0.75rem', sm: '0.875rem' }
-                    }}
-                  >
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                    }}>
                     Receive timely reminders to add memories and stay connected
                   </Typography>
                 </Box>
               </Paper>
-              
+
               {/* Reminder Frequency */}
-              <Paper 
-                elevation={1} 
+              <Paper
+                elevation={1}
                 sx={{
                   p: { xs: 2, sm: 2.5 },
                   mb: { xs: 3, sm: 4 },
                   borderRadius: 2,
                   bgcolor: 'background.paper',
-                  opacity: userData.notifications ? 1 : 0.7
-                }}
-              >
-                <Typography 
-                  variant='subtitle1' 
-                  sx={{ 
-                    fontWeight: 500, 
+                  opacity: userData.notifications ? 1 : 0.7,
+                }}>
+                <Typography
+                  variant='subtitle1'
+                  sx={{
+                    fontWeight: 500,
                     mb: 2,
-                    textAlign: { xs: 'center', sm: 'left' } 
-                  }}
-                >
+                    textAlign: { xs: 'center', sm: 'left' },
+                  }}>
                   Reminder Frequency
                 </Typography>
-                
-                <FormControl 
-                  fullWidth 
+
+                <FormControl
+                  fullWidth
                   disabled={!userData.notifications}
-                  sx={{ 
+                  sx={{
                     '& .MuiOutlinedInput-root': {
-                      borderRadius: 1.5
-                    }
-                  }}
-                >
+                      borderRadius: 1.5,
+                    },
+                  }}>
                   <InputLabel id='reminder-frequency-label'>
                     Reminder Frequency
                   </InputLabel>
@@ -997,86 +1153,91 @@ const Settings = () => {
                     value={userData.reminderFrequency}
                     label='Reminder Frequency'
                     name='reminderFrequency'
-                    onChange={handleInputChange}
-                  >
+                    onChange={handleInputChange}>
                     <MenuItem value='daily'>Daily</MenuItem>
                     <MenuItem value='weekly'>Weekly</MenuItem>
                     <MenuItem value='monthly'>Monthly</MenuItem>
                   </Select>
-                  
-                  <Typography 
-                    variant='body2' 
-                    color='text.secondary' 
-                    sx={{ 
-                      mt: 2, 
+
+                  <Typography
+                    variant='body2'
+                    color='text.secondary'
+                    sx={{
+                      mt: 2,
                       textAlign: { xs: 'center', sm: 'left' },
-                      fontSize: { xs: '0.75rem', sm: '0.875rem' }
-                    }}
-                  >
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                    }}>
                     Choose how often you'd like to receive memory reminders
                   </Typography>
                 </FormControl>
               </Paper>
+
+              {/* Family member management dialogs removed - now handled by administrators */}
             </Box>
           )}
         </Paper>
 
-        <Paper elevation={2} sx={{ mt: 4, p: { xs: 2, sm: 3 }, borderRadius: 3 }}>
-          <Box sx={{ 
-            display: 'flex', 
-            alignItems: 'center',
-            flexDirection: { xs: 'column', sm: 'row' },
-            gap: { xs: 1, sm: 0 },
-            mb: { xs: 2, sm: 1 }
-          }}>
-            <SecurityIcon color='primary' sx={{ mr: { xs: 0, sm: 2 }, fontSize: { xs: 28, sm: 30 } }} />
-            <Typography 
-              variant='h6' 
-              sx={{ 
+        <Paper
+          elevation={2}
+          sx={{ mt: 4, p: { xs: 2, sm: 3 }, borderRadius: 3 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              flexDirection: { xs: 'column', sm: 'row' },
+              gap: { xs: 1, sm: 0 },
+              mb: { xs: 2, sm: 1 },
+            }}>
+            <SecurityIcon
+              color='primary'
+              sx={{ mr: { xs: 0, sm: 2 }, fontSize: { xs: 28, sm: 30 } }}
+            />
+            <Typography
+              variant='h6'
+              sx={{
                 fontWeight: 600,
-                textAlign: { xs: 'center', sm: 'left' }
-              }}
-            >
+                textAlign: { xs: 'center', sm: 'left' },
+              }}>
               Account Security
             </Typography>
           </Box>
-          <Typography 
-            variant='body2' 
-            color='text.secondary' 
-            sx={{ 
-              mb: 2, 
+          <Typography
+            variant='body2'
+            color='text.secondary'
+            sx={{
+              mb: 2,
               textAlign: { xs: 'center', sm: 'left' },
-              display: { xs: 'block', sm: 'block' }
-            }}
-          >
+              display: { xs: 'block', sm: 'block' },
+            }}>
             Manage your account security settings and preferences
           </Typography>
           <Divider sx={{ my: { xs: 2, sm: 2.5 } }} />
-          <Grid container spacing={{ xs: 2, sm: 3 }} sx={{ mt: { xs: 1, sm: 1.5 } }}>
+          <Grid
+            container
+            spacing={{ xs: 2, sm: 3 }}
+            sx={{ mt: { xs: 1, sm: 1.5 } }}>
             <Grid item xs={12} sm={6}>
-              <Button 
-                variant='outlined' 
+              <Button
+                variant='outlined'
                 fullWidth
-                sx={{ 
+                sx={{
                   py: { xs: 1.2, sm: 1.5 },
                   borderRadius: 2,
-                  fontWeight: 500
-                }}
-              >
+                  fontWeight: 500,
+                }}>
                 Change Password
               </Button>
             </Grid>
             <Grid item xs={12} sm={6}>
-              <Button 
-                variant='outlined' 
-                color='error' 
+              <Button
+                variant='outlined'
+                color='error'
                 fullWidth
-                sx={{ 
+                sx={{
                   py: { xs: 1.2, sm: 1.5 },
                   borderRadius: 2,
-                  fontWeight: 500
-                }}
-              >
+                  fontWeight: 500,
+                }}>
                 Delete Account
               </Button>
             </Grid>

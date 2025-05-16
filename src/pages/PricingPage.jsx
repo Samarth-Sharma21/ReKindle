@@ -378,7 +378,7 @@ const PricingPage = () => {
 
                 <CardContent
                   sx={{
-                    p: { xs: 2, sm: 3 },
+                    p: { xs: 1.5, sm: 2, md: 3 },
                     flexGrow: 1,
                     display: 'flex',
                     flexDirection: 'column',
@@ -397,7 +397,11 @@ const PricingPage = () => {
                     <Typography
                       variant='subtitle1'
                       sx={{
-                        fontSize: { xs: '0.8rem', sm: '0.9rem' },
+                        fontSize: {
+                          xs: '0.75rem',
+                          sm: '0.85rem',
+                          md: '0.9rem',
+                        },
                         color: 'text.secondary',
                         mb: 2,
                       }}>
@@ -438,7 +442,11 @@ const PricingPage = () => {
                           <ListItemText
                             primary={feature}
                             primaryTypographyProps={{
-                              fontSize: { xs: '0.8rem', sm: '0.9rem' },
+                              fontSize: {
+                                xs: '0.75rem',
+                                sm: '0.85rem',
+                                md: '0.9rem',
+                              },
                             }}
                           />
                         </ListItem>
@@ -457,7 +465,7 @@ const PricingPage = () => {
                       py: { xs: 1, sm: 1.5 },
                       fontWeight: 600,
                       textTransform: 'none',
-                      fontSize: { xs: '0.9rem', sm: '1rem' },
+                      fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' },
                     }}>
                     {tier.buttonText}
                   </Button>
@@ -488,7 +496,7 @@ const PricingPage = () => {
             color='text.secondary'
             sx={{
               mb: 5,
-              fontSize: { xs: '0.9rem', sm: '1rem' },
+              fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' },
             }}>
             Still have questions? Contact our support team
           </Typography>
@@ -520,7 +528,7 @@ const PricingPage = () => {
               <Grid item xs={12} sm={6} key={index}>
                 <Card
                   sx={{
-                    p: { xs: 2, sm: 3 },
+                    p: { xs: 1.5, sm: 2, md: 3 },
                     height: '100%',
                     textAlign: 'left',
                     borderRadius: 2,
@@ -548,7 +556,7 @@ const PricingPage = () => {
                     color='text.secondary'
                     sx={{
                       pl: 4.5,
-                      fontSize: { xs: '0.8rem', sm: '0.9rem' },
+                      fontSize: { xs: '0.75rem', sm: '0.85rem', md: '0.9rem' },
                     }}>
                     {faq.answer}
                   </Typography>
@@ -583,7 +591,7 @@ const PricingPage = () => {
               mb: 3,
               maxWidth: '600px',
               mx: 'auto',
-              fontSize: { xs: '0.9rem', sm: '1rem' },
+              fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' },
             }}>
             Join ReKindle today and start your memory preservation journey.
           </Typography>
@@ -598,7 +606,7 @@ const PricingPage = () => {
               px: { xs: 3, sm: 4 },
               fontWeight: 600,
               textTransform: 'none',
-              fontSize: { xs: '0.9rem', sm: '1rem' },
+              fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' },
             }}>
             Get Started Now
           </Button>

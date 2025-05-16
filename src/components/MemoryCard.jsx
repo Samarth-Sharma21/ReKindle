@@ -105,11 +105,11 @@ const MemoryCard = ({
         return (
           <Box sx={{ position: 'relative', overflow: 'hidden', height: 200 }}>
             {imageLoading && (
-              <Skeleton 
-                variant="rectangular" 
-                width="100%" 
-                height="100%" 
-                animation="wave"
+              <Skeleton
+                variant='rectangular'
+                width='100%'
+                height='100%'
+                animation='wave'
               />
             )}
             {!imageError ? (
@@ -148,7 +148,7 @@ const MemoryCard = ({
                 borderRadius: '50%',
                 p: 0.5,
               }}>
-              <PhotoIcon color="primary" fontSize="small" />
+              <PhotoIcon color='primary' fontSize='small' />
             </Box>
           </Box>
         );

@@ -11,10 +11,9 @@ import {
   Skeleton,
 } from '@mui/material';
 import { motion } from 'framer-motion';
-import ViewListIcon from '@mui/icons-material/ViewList';
 import ViewModuleIcon from '@mui/icons-material/ViewModule';
-import TimelineIcon from '@mui/icons-material/Timeline';
-import { MemoryCard } from './';
+import ViewListIcon from '@mui/icons-material/ViewList';
+import { MemoryCard, MemoryListView } from './';
 import { supabase } from '../backend/server';
 
 const MemoryTimeline = () => {
@@ -94,7 +93,7 @@ const MemoryTimeline = () => {
 
   return (
     <Container>
-      <Box sx={{ mb: 4 }}>
+      <Box sx={{ mb: 4, minHeight: '600px' }}>
         <Box
           sx={{
             display: 'flex',
@@ -115,9 +114,6 @@ const MemoryTimeline = () => {
             </ToggleButton>
             <ToggleButton value='list' aria-label='list view'>
               <ViewListIcon />
-            </ToggleButton>
-            <ToggleButton value='timeline' aria-label='timeline view'>
-              <TimelineIcon />
             </ToggleButton>
           </ToggleButtonGroup>
         </Box>
@@ -149,18 +145,17 @@ const MemoryTimeline = () => {
                 {monthYear}
               </Typography>
 
-              <Grid container spacing={3}>
-                {groupedMemories[monthYear].map((memory) => (
-                  <Grid
-                    item
-                    xs={12}
-                    sm={viewMode === 'list' ? 12 : 6}
-                    md={viewMode === 'list' ? 12 : 4}
-                    key={memory.id}>
-                    <MemoryCard memory={memory} viewMode={viewMode} />
-                  </Grid>
-                ))}
-              </Grid>
+              {viewMode === 'list' ? (
+                <MemoryListView memories={groupedMemories[monthYear]} />
+              ) : (
+                <Grid container spacing={3}>
+                  {groupedMemories[monthYear].map((memory) => (
+                    <Grid item xs={12} sm={6} md={4} key={memory.id}>
+                      <MemoryCard memory={memory} viewMode={viewMode} />
+                    </Grid>
+                  ))}
+                </Grid>
+              )}
             </Box>
           ))
         )}

@@ -133,7 +133,7 @@ const FamilyLogin = () => {
         py: 4,
       }}>
       {/* Chatbot */}
-      <Chatbot />
+      {/* <Chatbot /> */}
 
       <Container maxWidth='sm' disableGutters sx={{ px: { xs: 0, sm: 2 } }}>
         <motion.div

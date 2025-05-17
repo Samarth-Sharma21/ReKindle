@@ -299,11 +299,11 @@ const LandingPage = () => {
                 <Logo
                   size={
                     isExtraSmallMobile
-                      ? 'tiny'
+                      ? 'small'
                       : isMobile
-                      ? 'small'
+                      ? 'medium'
                       : isTablet
-                      ? 'small'
+                      ? 'medium'
                       : 'medium'
                   }
                 />
@@ -501,10 +501,10 @@ const LandingPage = () => {
           position: 'relative',
           overflow: 'hidden',
           marginTop: {
-            xs: 7,
-            sm: 8,
-            md: 10.5,
-            lg: 11,
+            xs: 10,
+            sm: 11.5,
+            md: 12,
+            lg: 12,
           },
           height: {
             xs: 'auto',

@@ -554,7 +554,7 @@ const PatientDashboard = () => {
                   <Grid item xs={6}>
                     <Button
                       component={Link}
-                      to='/patient/timeline'
+                      to='/patient/dashboard/timeline'
                       variant='outlined'
                       color='primary'
                       fullWidth

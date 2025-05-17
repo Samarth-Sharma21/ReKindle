@@ -280,7 +280,7 @@ const FamilyManagementCard = () => {
                 color='primary'
                 size='small'
                 component={Link}
-                to='/family-connections'
+                to='/settings'
                 sx={{ mt: 1 }}>
                 Add Connection
               </Button>
@@ -294,7 +294,7 @@ const FamilyManagementCard = () => {
         <Box sx={{ mt: 'auto', pt: 2 }}>
           <Button
             component={Link}
-            to='/family-connections'
+            to='/settings'
             variant='outlined'
             color='primary'
             fullWidth

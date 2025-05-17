@@ -12,9 +12,9 @@ import {
   Tabs,
   Tab,
   Alert,
-  useMediaQuery,
-  useTheme as useMuiTheme,
+  useTheme,
 } from '@mui/material';
+import { useResponsive, commonResponsiveStyles } from '../styles/responsiveStyles';
 import { motion } from 'framer-motion';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
@@ -30,9 +30,9 @@ import {
 
 const HelpCenter = () => {
   const navigate = useNavigate();
-  const muiTheme = useMuiTheme();
-  const isMobile = useMediaQuery(muiTheme.breakpoints.down('sm'));
-  const isTablet = useMediaQuery(muiTheme.breakpoints.between('sm', 'md'));
+  const muiTheme = useTheme();
+  const isDarkMode = muiTheme.palette.mode === 'dark';
+  const { isExtraSmallMobile, isMobile, isTablet, isLaptop, isDesktop } = useResponsive();
   const [activeTab, setActiveTab] = useState(0);
   const [locationShared, setLocationShared] = useState(false);
   const [emergencyAlertSent, setEmergencyAlertSent] = useState(false);

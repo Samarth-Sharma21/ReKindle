@@ -17,6 +17,8 @@ import MemoryCarousel from './MemoryCarousel';
 import MemoryForm from './MemoryForm';
 import MemoryListView from './MemoryListView';
 import MemoryTimeline from './MemoryTimeline';
+import AuthGuard from './AuthGuard';
+import ResponsiveWrapper from './ResponsiveWrapper';
 
 import Navbar from './Navbar';
 import NotificationsCard from './NotificationsCard';
@@ -53,4 +55,6 @@ export {
   SavedLocationsCard,
   VoiceRecorder,
   UpcomingTasksCard,
+  AuthGuard,
+  ResponsiveWrapper,
 };

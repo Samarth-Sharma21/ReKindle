@@ -15,9 +15,12 @@ import {
   Stack,
   Avatar,
   CardMedia,
-  useMediaQuery,
   useTheme,
 } from '@mui/material';
+import {
+  useResponsive,
+  commonResponsiveStyles,
+} from '../styles/responsiveStyles';
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 import SpaIcon from '@mui/icons-material/Spa';
 import TimelineIcon from '@mui/icons-material/Timeline';
@@ -45,15 +48,6 @@ import { alpha } from '@mui/material/styles';
 import catImage from '../assets/cat.jpg';
 import Logo from '../components/Logo';
 
-// Define breakpoints explicitly to match landing page
-const breakpoints = {
-  xs: 0,
-  sm: 576,
-  md: 768,
-  lg: 1024,
-  xl: 1200,
-};
-
 const PatientDashboard = () => {
   const navigate = useNavigate();
   const [showBreathingExercise, setShowBreathingExercise] = useState(false);
@@ -61,7 +55,8 @@ const PatientDashboard = () => {
   const [greeting, setGreeting] = useState('');
   const theme = useTheme();
   const isDarkMode = theme.palette.mode === 'dark';
-  const isMobile = useMediaQuery(`(max-width:${breakpoints.sm}px)`);
+  const { isExtraSmallMobile, isMobile, isTablet, isLaptop, isDesktop } =
+    useResponsive();
 
   // Create a combined userData object with defaults and auth data
   const [memories, setMemories] = useState([]);

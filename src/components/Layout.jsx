@@ -24,6 +24,10 @@ import {
   Tooltip,
   alpha,
 } from '@mui/material';
+import {
+  useResponsive,
+  commonResponsiveStyles,
+} from '../styles/responsiveStyles';
 import { styled } from '@mui/material/styles';
 import MenuIcon from '@mui/icons-material/Menu';
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
@@ -49,10 +53,14 @@ const StyledToolbar = styled(Toolbar)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  padding: theme.spacing(0, 3),
+  padding: theme.spacing(0, 1.5),
   height: 60,
+  width: '100%',
+  maxWidth: '100vw',
+  overflowX: 'hidden',
   [theme.breakpoints.up('sm')]: {
     height: 65,
+    padding: theme.spacing(0, 3),
   },
 }));
 
@@ -78,7 +86,8 @@ const StyledAppBar = styled(AppBar)(({ theme, visible }) => ({
   left: 0,
   right: 0,
   width: '100%',
-  maxWidth: '100%',
+  maxWidth: '100vw',
+  overflowX: 'hidden',
   transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
   transform: visible ? 'translateY(0)' : 'translateY(-100%)',
 }));
@@ -173,7 +182,7 @@ const NavSection = styled(Box)(({ theme }) => ({
 const Layout = () => {
   const muiTheme = useMuiTheme();
   const { mode, toggleTheme } = useTheme();
-  const isMobile = useMediaQuery(muiTheme.breakpoints.down('md'));
+  const { isMobile, isTablet, isLaptop, isDesktop } = useResponsive();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const [headerVisible, setHeaderVisible] = useState(true);
@@ -233,7 +242,7 @@ const Layout = () => {
   };
 
   const handleCloseDrawer = () => {
-    if (isMobile) {
+    if (isMobile || isTablet) {
       setMobileOpen(false);
     }
   };
@@ -471,7 +480,7 @@ const Layout = () => {
               aria-label='open drawer'
               edge='start'
               onClick={handleDrawerToggle}
-              sx={{ mr: 1, display: { md: 'none' } }}>
+              sx={{ mr: 0.5, display: { md: 'none' } }}>
               <MenuIcon />
             </IconButton>
             <Box
@@ -484,17 +493,18 @@ const Layout = () => {
                 '&:hover': {
                   opacity: 0.85,
                 },
-                transform: { xs: 'scale(1)', sm: 'scale(1.1)' },
+                transform: { xs: 'scale(0.9)', sm: 'scale(1)' },
                 transformOrigin: 'left center',
-                mx: { xs: 0.5, sm: 0 },
-                overflow: 'visible',
-                marginLeft: { xs: 0, sm: 1 },
+                mx: { xs: 0, sm: 0 },
+                overflow: 'hidden',
+                marginLeft: { xs: 0, sm: 0.5 },
+                flexShrink: 1,
               }}>
               <Logo size={isMobile ? 'small' : 'medium'} withLink={true} />
             </Box>
           </StyledLogoContainer>
 
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
             {/* Theme Toggle */}
             <Tooltip
               title={`Switch to ${mode === 'light' ? 'Dark' : 'Light'} Mode`}>
@@ -502,13 +512,18 @@ const Layout = () => {
                 onClick={toggleTheme}
                 color='inherit'
                 sx={{
-                  mr: 1,
+                  mr: { xs: 0.5, sm: 1 },
                   color: mode === 'dark' ? 'primary.main' : 'text.secondary',
+                  padding: { xs: 0.5, sm: 1 },
                 }}>
                 {mode === 'dark' ? (
-                  <LightModeOutlinedIcon />
+                  <LightModeOutlinedIcon
+                    fontSize={isMobile ? 'small' : 'medium'}
+                  />
                 ) : (
-                  <DarkModeOutlinedIcon />
+                  <DarkModeOutlinedIcon
+                    fontSize={isMobile ? 'small' : 'medium'}
+                  />
                 )}
               </IconButton>
             </Tooltip>
@@ -523,8 +538,12 @@ const Layout = () => {
                   '&:hover': {
                     bgcolor: (theme) => alpha(theme.palette.primary.main, 0.2),
                   },
+                  padding: { xs: 0.5, sm: 0.8 },
+                  mr: { xs: 0.5, sm: 1 },
                 }}>
-                <AddPhotoAlternateOutlinedIcon />
+                <AddPhotoAlternateOutlinedIcon
+                  fontSize={isMobile ? 'small' : 'medium'}
+                />
               </IconButton>
             </Tooltip>
             <Tooltip title='Account settings'>
@@ -532,7 +551,7 @@ const Layout = () => {
                 onClick={handleMenuOpen}
                 size='small'
                 sx={{
-                  ml: 1,
+                  ml: { xs: 0, sm: 1 },
                   border: '1px solid',
                   borderColor: 'divider',
                   borderRadius: 2,
@@ -546,10 +565,10 @@ const Layout = () => {
                 aria-expanded={anchorEl ? 'true' : undefined}>
                 <Avatar
                   sx={{
-                    width: 36,
-                    height: 36,
+                    width: isMobile ? 30 : 36,
+                    height: isMobile ? 30 : 36,
                     bgcolor: (theme) => theme.palette.primary.main,
-                    fontSize: '1rem',
+                    fontSize: isMobile ? '0.8rem' : '1rem',
                     fontWeight: 600,
                   }}>
                   {user?.name?.charAt(0) || 'U'}
@@ -571,7 +590,8 @@ const Layout = () => {
                 overflow: 'visible',
                 borderRadius: 2,
                 mt: 1.5,
-                width: 220,
+                width: { xs: 180, sm: 220 },
+                maxWidth: '95vw',
                 '&:before': {
                   content: '""',
                   display: 'block',
@@ -614,7 +634,7 @@ const Layout = () => {
         </StyledToolbar>
       </StyledAppBar>
       <Box component='nav' sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
-        {isMobile ? (
+        {isMobile || isTablet ? (
           <Drawer
             variant='temporary'
             open={mobileOpen}
@@ -645,14 +665,15 @@ const Layout = () => {
         component='main'
         sx={{
           flexGrow: 1,
-          p: 0,
-          width: { md: `calc(100% - ${drawerWidth}px)` },
+          p: { xs: 1.5, sm: 2, md: 3, lg: 4 },
+          width: { xs: '100%', md: `calc(100% - ${drawerWidth}px)` },
           minHeight: '100vh',
           pt: { xs: '70px', sm: '75px' },
           transition: 'padding-top 0.3s ease',
-          width: '100%',
-          maxWidth: '100%',
+          maxWidth: '100vw',
+          overflowX: 'hidden',
           boxSizing: 'border-box',
+          ...commonResponsiveStyles.container,
         }}>
         <motion.div
           initial={{ opacity: 0 }}

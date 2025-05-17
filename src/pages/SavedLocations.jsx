@@ -26,8 +26,11 @@ import {
   Tooltip,
   useTheme,
   alpha,
-  useMediaQuery,
 } from '@mui/material';
+import {
+  useResponsive,
+  commonResponsiveStyles,
+} from '../styles/responsiveStyles';
 import AddLocationAltIcon from '@mui/icons-material/AddLocationAlt';
 import MyLocationIcon from '@mui/icons-material/MyLocation';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -44,7 +47,8 @@ const SavedLocations = () => {
   const navigate = useNavigate();
   const theme = useTheme();
   const isDarkMode = theme.palette.mode === 'dark';
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const { isExtraSmallMobile, isMobile, isTablet, isLaptop, isDesktop } =
+    useResponsive();
 
   // State for saved locations
   const [locations, setLocations] = useState([]);

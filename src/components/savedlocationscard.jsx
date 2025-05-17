@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase, locationService } from '../backend/server';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
+import { useResponsive } from '../styles/responsiveStyles';
 import {
   Box,
   Typography,
@@ -24,6 +25,7 @@ const SavedLocationsCard = () => {
   const navigate = useNavigate();
   const theme = useTheme();
   const isDarkMode = theme.palette.mode === 'dark';
+  const { isExtraSmallMobile, isMobile, isTablet, isLaptop, isDesktop } = useResponsive();
 
   // State for saved locations
   const [savedLocations, setSavedLocations] = useState([]);
@@ -150,13 +152,17 @@ const SavedLocationsCard = () => {
         <Box
           sx={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(2, 1fr)', // Always exactly 2 side by side
-            gap: 2,
+            gridTemplateColumns: {
+              xs: '1fr', // Single column on extra small mobile
+              sm: 'repeat(2, 1fr)', // Two columns on larger screens
+            },
+            gap: { xs: 1.5, sm: 2, md: 2.5 },
             flexGrow: 1,
             overflowY: 'auto',
-            pr: 2, // Increasing padding right from 1 to 2 to avoid scrollbar overlap
-            pb: 1,
+            pr: { xs: 1, sm: 2 }, // Responsive padding
+            pb: { xs: 0.5, sm: 1 },
           }}>
+
           {savedLocations.map((location) => (
             <motion.div
               key={location.id}

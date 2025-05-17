@@ -89,6 +89,36 @@ const CalendarAndTasks = ({
     frequency: 'once',
   });
 
+  // Listen for edit task event from FullVersionTaskCard
+  useEffect(() => {
+    const handleEditTask = (event) => {
+      const task = event.detail;
+      setEditingTaskId(task.id);
+      setNewTask({
+        title: task.title,
+        description: task.description || '',
+        due_date: task.due_date,
+        priority: task.priority,
+        completed: task.completed,
+        added_by: task.added_by,
+        frequency: task.frequency || 'once',
+      });
+      setOpenTaskDialog(true);
+    };
+
+    document.addEventListener('openEditTaskDialog', handleEditTask);
+    document.addEventListener('openAddTaskDialog', () =>
+      setOpenTaskDialog(true)
+    );
+
+    return () => {
+      document.removeEventListener('openEditTaskDialog', handleEditTask);
+      document.removeEventListener('openAddTaskDialog', () =>
+        setOpenTaskDialog(true)
+      );
+    };
+  }, []);
+
   // UI states
   const [notification, setNotification] = useState({
     open: false,
@@ -511,11 +541,17 @@ const CalendarAndTasks = ({
   };
 
   return (
-    <Box sx={{ width: '100%' }}>
+    <Box
+      sx={{
+        width: '100%',
+        maxWidth: '100%',
+        overflowX: 'hidden',
+        position: 'relative',
+      }}>
       <Paper
         elevation={3}
         sx={{
-          p: 2,
+          p: { xs: 1.5, sm: 2 },
           borderRadius: 2,
           bgcolor: 'background.paper',
           height: '100%',
@@ -524,22 +560,49 @@ const CalendarAndTasks = ({
           Calendar & Tasks
         </Typography>
 
-        <Grid container spacing={2}>
+        <Grid container spacing={{ xs: 1, sm: 2 }}>
           {/* Calendar Section - conditionally rendered */}
           {showCalendar && (
             <Grid item xs={12} md={6}>
               <LocalizationProvider dateAdapter={AdapterDateFns}>
-                <DateCalendar
-                  value={selectedDate}
-                  onChange={handleDateChange}
-                  renderDay={renderDay}
+                <Box
                   sx={{
                     width: '100%',
-                    '& .MuiPickersDay-root.Mui-selected': {
-                      backgroundColor: theme.palette.primary.main,
+                    maxWidth: '100%',
+                    overflowX: 'auto',
+                    '& .MuiDateCalendar-root': {
+                      width: { xs: '100%', sm: 'auto' },
+                      maxWidth: '100%',
+                      '& .MuiDayCalendar-header, & .MuiDayCalendar-weekContainer':
+                        {
+                          justifyContent: 'space-around',
+                        },
+                      '& .MuiPickersCalendarHeader-root': {
+                        paddingLeft: { xs: 0, sm: 1 },
+                        paddingRight: { xs: 0, sm: 1 },
+                      },
+                      '& .MuiPickersCalendarHeader-label': {
+                        fontSize: { xs: '0.9rem', sm: '1rem' },
+                      },
+                      '& .MuiPickersDay-root': {
+                        margin: { xs: '1px', sm: '2px' },
+                        width: { xs: '32px', sm: '36px' },
+                        height: { xs: '32px', sm: '36px' },
+                      },
                     },
-                  }}
-                />
+                  }}>
+                  <DateCalendar
+                    value={selectedDate}
+                    onChange={handleDateChange}
+                    renderDay={renderDay}
+                    sx={{
+                      width: '100%',
+                      '& .MuiPickersDay-root.Mui-selected': {
+                        backgroundColor: theme.palette.primary.main,
+                      },
+                    }}
+                  />
+                </Box>
               </LocalizationProvider>
             </Grid>
           )}
@@ -674,17 +737,19 @@ const CalendarAndTasks = ({
                           </>
                         }
                       />
-                      <ListItemSecondaryAction sx={{ display: 'flex' }}>
+                      <ListItemSecondaryAction sx={{ right: { xs: 4, sm: 8 } }}>
                         <IconButton
                           edge='end'
                           onClick={() => handleOpenTaskDialog(task.id)}
-                          sx={{ mr: 1 }}>
-                          <EditIcon />
+                          size='small'
+                          sx={{ mr: 0.5 }}>
+                          <EditIcon fontSize='small' />
                         </IconButton>
                         <IconButton
                           edge='end'
-                          onClick={() => handleDeleteTask(task.id)}>
-                          <DeleteIcon />
+                          onClick={() => handleDeleteTask(task.id)}
+                          size='small'>
+                          <DeleteIcon fontSize='small' />
                         </IconButton>
                       </ListItemSecondaryAction>
                     </ListItem>

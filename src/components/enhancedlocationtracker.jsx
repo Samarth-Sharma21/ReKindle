@@ -6,6 +6,10 @@ import {
 } from '../backend/server';
 import { useAuth } from '../contexts/AuthContext';
 import {
+  useResponsive,
+  commonResponsiveStyles,
+} from '../styles/responsiveStyles';
+import {
   Box,
   Typography,
   Paper,
@@ -49,6 +53,8 @@ const EnhancedLocationTracker = () => {
   const { user } = useAuth();
   const theme = useTheme();
   const isDarkMode = theme.palette.mode === 'dark';
+  const { isExtraSmallMobile, isMobile, isTablet, isLaptop, isDesktop } =
+    useResponsive();
   const mapRef = useRef(null);
   const googleMapRef = useRef(null);
   const geocoderRef = useRef(null);

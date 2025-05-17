@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -7,7 +7,6 @@ import {
   Paper,
   Grid,
   useTheme,
-  useMediaQuery,
   Button,
   IconButton,
   Tooltip,
@@ -15,6 +14,15 @@ import {
   InputAdornment,
   Divider,
 } from '@mui/material';
+import {
+  useResponsive,
+  commonResponsiveStyles,
+} from '../styles/responsiveStyles';
+import {
+  useCalendarResponsive,
+  responsiveGridLayouts,
+  safeContainerStyles,
+} from '../styles/globalResponsive';
 import { CalendarAndTasks, UpcomingTasksCard } from '../components';
 import { alpha } from '@mui/material/styles'; // Adjust the path as needed
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
@@ -28,20 +36,15 @@ import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import FullVersionTaskCard from '../components/FullVersionTaskCard';
 
-// Define breakpoints explicitly to match landing page
-const breakpoints = {
-  xs: 0,
-  sm: 576,
-  md: 768,
-  lg: 1024,
-  xl: 1200,
-};
-
 const CalendarPage = () => {
   const theme = useTheme();
   const isDarkMode = theme.palette.mode === 'dark';
-  const isMobile = useMediaQuery(`(max-width:${breakpoints.sm}px)`);
-  const isTablet = useMediaQuery(`(max-width:${breakpoints.md}px)`);
+  // All responsive variables are destructured here for potential future use
+  // Currently only isMobile is actively used in this component
+  // The other variables (isTablet, isLaptop, isDesktop) are available for
+  // implementing more granular responsive designs if needed in the future
+  const { isExtraSmallMobile, isMobile, isTablet, isLaptop, isDesktop } =
+    useResponsive();
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -53,22 +56,20 @@ const CalendarPage = () => {
     document.dispatchEvent(new CustomEvent('openAddTaskDialog'));
   };
 
+  const { calendarContainer, calendarWrapper } = useCalendarResponsive();
+
   return (
-    <Box
-      sx={{
-        width: '100%',
-        maxWidth: '100%',
-        overflowX: 'hidden',
-      }}>
+    <Box sx={safeContainerStyles}>
       <Container
         maxWidth='lg'
-        disableGutters={isMobile}
+        disableGutters={false}
         sx={{
           mt: { xs: 2, sm: 3 },
           mb: { xs: 4, sm: 6 },
-          px: { xs: 2, sm: 3, md: 4 },
+          px: { xs: 2, sm: 2, md: 3 },
           boxSizing: 'border-box',
           width: '100%',
+          maxWidth: '100%',
           overflowX: 'hidden',
         }}>
         {/* Simple Header */}
@@ -96,9 +97,12 @@ const CalendarPage = () => {
         </Box>
 
         {/* Main Content - Calendar and Tasks Layout */}
-        <Grid container spacing={3}>
-          {/* Calendar Section */}
-          <Grid item xs={12} md={6}>
+        <Grid
+          container
+          spacing={isMobile ? 2 : 3}
+          sx={{ width: '100%', mx: 0 }}>
+          {/* Calendar Section - Full Width */}
+          <Grid item xs={12}>
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -106,36 +110,59 @@ const CalendarPage = () => {
               <Paper
                 elevation={2}
                 sx={{
-                  p: { xs: 2, sm: 3 },
+                  p: { xs: 2, sm: 2, md: 3 },
                   borderRadius: 2,
                   height: '100%',
-                  minHeight: '500px',
+                  minHeight: { xs: '350px', sm: '400px', md: '500px' },
                   bgcolor: isDarkMode
                     ? alpha(theme.palette.background.paper, 0.6)
                     : alpha(theme.palette.background.paper, 0.8),
                   backdropFilter: 'blur(10px)',
+                  overflow: 'hidden',
+                  width: '100%',
+                  position: 'relative',
+                  ...calendarContainer,
                 }}>
+                <Box sx={calendarWrapper}>
+                  <CalendarAndTasks
+                    activeTab={0} // Force calendar view
+                    taskFrequency={taskFrequency}
+                  />
+                </Box>
+
+                {/* Add Task Button - Integrated into the calendar header instead of floating */}
                 <Box
                   sx={{
                     display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
+                    justifyContent: 'flex-end',
+                    mt: 1,
                     mb: 2,
+                    position: 'relative',
+                    zIndex: 5,
                   }}>
-                  <Typography variant='h6' sx={{ fontWeight: 500 }}>
-                    Calendar
-                  </Typography>
+                  <Button
+                    variant='contained'
+                    color='primary'
+                    startIcon={<AddIcon />}
+                    onClick={handleAddTask}
+                    sx={{
+                      borderRadius: '20px',
+                      px: 2,
+                      py: 1,
+                      boxShadow: '0 2px 5px rgba(0, 0, 0, 0.15)',
+                      '&:hover': {
+                        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+                      },
+                    }}>
+                    Add Task
+                  </Button>
                 </Box>
-                <CalendarAndTasks
-                  activeTab={0} // Force calendar view
-                  taskFrequency={taskFrequency}
-                />
               </Paper>
             </motion.div>
           </Grid>
 
-          {/* Task Card - Wider with Search */}
-          <Grid item xs={12} md={6}>
+          {/* Task Card - Full Width */}
+          <Grid item xs={12}>
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -143,39 +170,30 @@ const CalendarPage = () => {
               <Paper
                 elevation={2}
                 sx={{
-                  p: { xs: 2, sm: 3 },
+                  p: { xs: 2, sm: 2, md: 3 },
                   borderRadius: 2,
                   height: '100%',
-                  minHeight: '500px',
+                  minHeight: { xs: '350px', sm: '400px', md: '500px' },
                   display: 'flex',
                   flexDirection: 'column',
                   bgcolor: isDarkMode
                     ? alpha(theme.palette.background.paper, 0.6)
                     : alpha(theme.palette.background.paper, 0.8),
                   backdropFilter: 'blur(10px)',
+                  overflow: 'hidden',
+                  width: '100%',
+                  position: 'relative',
+                  ...calendarContainer,
                 }}>
+                {/* Task List */}
                 <Box
                   sx={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    mb: 2,
+                    flexGrow: 1,
+                    overflow: 'auto',
+                    width: '100%',
+                    px: { xs: 0.5, sm: 1 },
                   }}>
-                 
-                {/* Task List - Grid Layout */}
-                <Box sx={{ flexGrow: 1, overflow: 'auto' }}>
-                  <Grid
-                    container
-                    spacing={2}
-                    sx={{
-                      display: 'grid',
-                      gridTemplateColumns:
-                        'repeat(auto-fill, minmax(500px, 1fr))',
-                      gap: 2,
-                    }}>
-                    <FullVersionTaskCard />
-                  </Grid>
-                </Box>
+                  <FullVersionTaskCard />
                 </Box>
               </Paper>
             </motion.div>

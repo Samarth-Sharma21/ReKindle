@@ -12,7 +12,7 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  --scrollbar-track-color: rgba(0, 0, 0, 0.1);
+  --scrollbar-track-color: rgba(73, 62, 40, 0.1);
   --scrollbar-thumb-color: rgba(255, 132, 0, 0.5);
   --scrollbar-thumb-hover-color: rgba(255, 132, 0, 0.8);
 }

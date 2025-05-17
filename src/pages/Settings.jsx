@@ -21,7 +21,6 @@ import {
   InputLabel,
   FormControl,
   Alert,
-  useMediaQuery,
   useTheme as useMuiTheme,
   CircularProgress,
   Snackbar,
@@ -32,6 +31,10 @@ import {
   DialogContent,
   DialogTitle,
 } from '@mui/material';
+import {
+  useResponsive,
+  commonResponsiveStyles,
+} from '../styles/responsiveStyles';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import PersonIcon from '@mui/icons-material/Person';
 import PeopleIcon from '@mui/icons-material/People';
@@ -70,11 +73,11 @@ const Settings = () => {
     severity: 'success',
   });
   const muiTheme = useMuiTheme();
-  const isMobile = useMediaQuery(muiTheme.breakpoints.down('sm'));
 
   // Get theme from context
   const { mode, toggleTheme } = useTheme();
-  const isTablet = useMediaQuery(muiTheme.breakpoints.between('sm', 'md'));
+  const { isExtraSmallMobile, isMobile, isTablet, isLaptop, isDesktop } =
+    useResponsive();
 
   // User data state
   const [userData, setUserData] = useState({

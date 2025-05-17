@@ -17,7 +17,12 @@ import {
   Alert,
   Snackbar,
   CircularProgress,
+  useTheme,
 } from '@mui/material';
+import {
+  useResponsive,
+  commonResponsiveStyles,
+} from '../styles/responsiveStyles';
 import { motion } from 'framer-motion';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import HomeIcon from '@mui/icons-material/Home';
@@ -28,11 +33,15 @@ import MyLocationIcon from '@mui/icons-material/MyLocation';
 
 const LocationTracker = () => {
   const { user } = useAuth();
+  const theme = useTheme();
+  const isDarkMode = theme.palette.mode === 'dark';
+  const { isExtraSmallMobile, isMobile, isTablet, isLaptop, isDesktop } =
+    useResponsive();
   const [currentLocation, setCurrentLocation] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [savedLocations, setSavedLocations] = useState([]);
-  
+
   // Fetch saved locations from database
   useEffect(() => {
     const fetchLocations = async () => {
@@ -139,7 +148,10 @@ const LocationTracker = () => {
       };
 
       // Save to database
-      const { data, error } = await locationService.saveLocation(newLocation, user.id);
+      const { data, error } = await locationService.saveLocation(
+        newLocation,
+        user.id
+      );
 
       if (error) throw error;
 
@@ -148,7 +160,7 @@ const LocationTracker = () => {
         ...newLocation,
         id: Date.now().toString(),
       };
-      
+
       setSavedLocations([...savedLocations, locationWithId]);
       setNewLocationName('');
       setShowAddForm(false);
@@ -163,14 +175,14 @@ const LocationTracker = () => {
   const setAsHome = async (id) => {
     try {
       // Update in database
-      const locationToUpdate = savedLocations.find(loc => loc.id === id);
+      const locationToUpdate = savedLocations.find((loc) => loc.id === id);
       if (locationToUpdate) {
         await locationService.updateLocation(
           { ...locationToUpdate, isHome: true },
           id
         );
       }
-      
+
       // Update in local state
       setSavedLocations(
         savedLocations.map((location) => ({
@@ -190,9 +202,11 @@ const LocationTracker = () => {
     try {
       // Delete from database
       await locationService.deleteLocation(id);
-      
+
       // Update local state
-      setSavedLocations(savedLocations.filter((location) => location.id !== id));
+      setSavedLocations(
+        savedLocations.filter((location) => location.id !== id)
+      );
       showNotification('Location deleted', 'success');
     } catch (error) {
       console.error('Error deleting location:', error.message);

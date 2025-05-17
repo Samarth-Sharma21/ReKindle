@@ -1,0 +1,191 @@
+/* Global Responsive Styles */
+
+/* Base responsive settings for all pages */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+/* Responsive typography */
+h1 {
+  font-size: clamp(1.8rem, 4vw, 3rem);
+}
+
+h2 {
+  font-size: clamp(1.5rem, 3vw, 2.5rem);
+}
+
+h3 {
+  font-size: clamp(1.2rem, 2.5vw, 2rem);
+}
+
+h4 {
+  font-size: clamp(1rem, 2vw, 1.5rem);
+}
+
+p,
+li,
+a,
+button,
+input,
+textarea,
+select {
+  font-size: clamp(0.875rem, 1.5vw, 1rem);
+}
+
+/* Responsive containers */
+.container {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+/* Responsive grid layout */
+.grid {
+  display: grid;
+  gap: 1rem;
+  width: 100%;
+}
+
+/* Responsive media queries matching landing page breakpoints */
+@media (max-width: 375px) {
+  /* Extra small mobile styles */
+  .container {
+    padding: 0 0.5rem;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+}
+
+@media (max-width: 450px) {
+  /* Mobile styles */
+  .container {
+    padding: 0 0.75rem;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+@media (min-width: 451px) and (max-width: 900px) {
+  /* Tablet styles */
+  .container {
+    padding: 0 1.5rem;
+  }
+
+  .grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+  }
+}
+
+@media (min-width: 901px) and (max-width: 1200px) {
+  /* Laptop styles */
+  .container {
+    padding: 0 2rem;
+    max-width: 90%;
+  }
+
+  .grid {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 2rem;
+  }
+}
+
+@media (min-width: 1201px) {
+  /* Desktop styles */
+  .container {
+    padding: 0 2.5rem;
+    max-width: 85%;
+  }
+
+  .grid {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2.5rem;
+  }
+}
+
+@media (min-width: 1600px) {
+  /* Extra large desktop styles */
+  .container {
+    padding: 0 3rem;
+    max-width: 80%;
+  }
+
+  .grid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 3rem;
+  }
+}
+
+/* Responsive flex layouts */
+.flex-row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.flex-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+@media (max-width: 450px) {
+  .flex-row {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+}
+
+/* Responsive spacing */
+.mt-responsive {
+  margin-top: clamp(1rem, 2vw, 2rem);
+}
+
+.mb-responsive {
+  margin-bottom: clamp(1rem, 2vw, 2rem);
+}
+
+.my-responsive {
+  margin-top: clamp(1rem, 2vw, 2rem);
+  margin-bottom: clamp(1rem, 2vw, 2rem);
+}
+
+.p-responsive {
+  padding: clamp(0.75rem, 1.5vw, 1.5rem);
+}
+
+/* Responsive images */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Responsive cards */
+.card {
+  border-radius: clamp(0.5rem, 1vw, 1rem);
+  padding: clamp(0.75rem, 1.5vw, 1.5rem);
+  width: 100%;
+}
+
+/* Responsive buttons */
+.button {
+  padding: clamp(0.5rem, 1vw, 0.75rem) clamp(0.75rem, 1.5vw, 1.5rem);
+  border-radius: clamp(0.25rem, 0.5vw, 0.5rem);
+}

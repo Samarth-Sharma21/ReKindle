@@ -142,7 +142,7 @@ const PatientLogin = () => {
       {/* Chatbot */}
       <Chatbot />
 
-      <Container maxWidth='sm'>
+      <Container maxWidth='sm' disableGutters sx={{ px: { xs: 0, sm: 2 } }}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

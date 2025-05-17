@@ -222,7 +222,7 @@ const LandingPage = () => {
         boxSizing: 'border-box',
       }}>
       {/* Chatbot */}
-      <Chatbot />
+      {/* <Chatbot /> */}
 
       {/* Header Section */}
       <Slide appear={false} direction='down' in={scrollDir === 'up'}>
@@ -295,20 +295,6 @@ const LandingPage = () => {
                   ml: { xs: 0, sm: 0 },
                   textDecoration: 'none',
                   position: 'relative',
-                  '&::after': {
-                    content: '""',
-                    position: 'absolute',
-                    bottom: -5,
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    width: 0,
-                    height: 2,
-                    background: theme.palette.primary.main,
-                    transition: 'width 0.3s ease',
-                  },
-                  '&:hover::after': {
-                    width: '70%',
-                  },
                 }}>
                 <Logo
                   size={
@@ -350,21 +336,6 @@ const LandingPage = () => {
                     textTransform: 'none',
                     fontSize: { md: '0.9rem', lg: '1rem' },
                     position: 'relative',
-                    '&::after': {
-                      content: '""',
-                      position: 'absolute',
-                      bottom: 6,
-                      left: '50%',
-                      transform: 'translateX(-50%)',
-                      width: 0,
-                      height: 2,
-                      borderRadius: '4px',
-                      background: theme.palette.primary.main,
-                      transition: 'width 0.3s ease',
-                    },
-                    '&:hover::after': {
-                      width: '70%',
-                    },
                   }}>
                   Our Approach
                 </Button>

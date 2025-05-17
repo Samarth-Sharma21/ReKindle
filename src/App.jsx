@@ -1,11 +1,13 @@
-import { lazy, Suspense } from 'react';
+import React, { lazy, Suspense } from 'react';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { CssBaseline, CircularProgress, Box } from '@mui/material';
 import './App.css';
+import './styles/globalResponsive.css';
 
 // Layout and Components
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
+import AuthGuard from './components/AuthGuard';
 import { AuthProvider } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import MemoryProvider from './contexts/MemoryContext';
@@ -65,7 +67,12 @@ function App() {
                 <Route path='/pricing' element={<PricingPage />} />
 
                 {/* Protected routes with Layout */}
-                <Route element={<Layout />}>
+                <Route
+                  element={
+                    <AuthGuard>
+                      <Layout />
+                    </AuthGuard>
+                  }>
                   {/* Patient routes */}
                   <Route
                     path='/patient/dashboard'

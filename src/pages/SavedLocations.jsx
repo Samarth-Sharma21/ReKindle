@@ -162,7 +162,7 @@ const SavedLocations = () => {
       setEditIndex(index);
     } else {
       // Add new location
-      setNewLocation({ name: '', address: '', notes: '', isHome: false });
+      setNewLocation({ name: '', address: '', notes: '' });
       setEditIndex(null);
     }
     setOpenDialog(true);
@@ -202,6 +202,9 @@ const SavedLocations = () => {
         throw new Error('User not authenticated');
       }
 
+      // Create location object without isHome for database
+      const { isHome, ...locationForDB } = newLocation;
+
       if (editIndex !== null) {
         // Update existing location in database
         const locationToUpdate = locations[editIndex];
@@ -209,7 +212,7 @@ const SavedLocations = () => {
 
         if (locationId) {
           // If the location has an ID, update it in the database
-          await locationService.updateLocation(newLocation, locationId);
+          await locationService.updateLocation(locationForDB, locationId);
         }
 
         // Update in local state
@@ -225,7 +228,7 @@ const SavedLocations = () => {
       } else {
         // Add new location to database
         const { data, error } = await locationService.saveLocation(
-          newLocation,
+          locationForDB,
           user.id
         );
 
@@ -821,18 +824,7 @@ const SavedLocations = () => {
               multiline
               rows={3}
             />
-            <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
-              <input
-                type='checkbox'
-                id='isHome'
-                name='isHome'
-                checked={newLocation.isHome || false}
-                onChange={handleInputChange}
-              />
-              <label htmlFor='isHome' style={{ marginLeft: 8 }}>
-                Set as home location
-              </label>
-            </Box>
+
           </Box>
         </DialogContent>
         <DialogActions>

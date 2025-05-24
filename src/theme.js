@@ -191,6 +191,12 @@ const commonThemeSettings = {
     '0 10px 14px -6px rgba(255, 138, 0, 0.12), 0 22px 35px -6px rgba(255, 138, 0, 0.1)',
     '0 11px 15px -7px rgba(255, 138, 0, 0.12), 0 24px 38px -7px rgba(255, 138, 0, 0.1)',
     '0 12px 17px -8px rgba(255, 138, 0, 0.14), 0 24px 38px -8px rgba(255, 138, 0, 0.11)',
+    '0 13px 19px -8px rgba(255, 138, 0, 0.14), 0 26px 40px -8px rgba(255, 138, 0, 0.11)',
+    '0 14px 21px -9px rgba(255, 138, 0, 0.16), 0 28px 42px -9px rgba(255, 138, 0, 0.12)',
+    '0 15px 23px -9px rgba(255, 138, 0, 0.16), 0 30px 44px -9px rgba(255, 138, 0, 0.12)',
+    '0 16px 25px -10px rgba(255, 138, 0, 0.18), 0 32px 46px -10px rgba(255, 138, 0, 0.13)',
+    '0 17px 27px -10px rgba(255, 138, 0, 0.18), 0 34px 48px -10px rgba(255, 138, 0, 0.13)',
+    '0 18px 29px -11px rgba(255, 138, 0, 0.20), 0 36px 50px -11px rgba(255, 138, 0, 0.14)',
   ],
   components: {
     MuiCssBaseline: {
